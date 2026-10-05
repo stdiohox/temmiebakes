@@ -1,0 +1,361 @@
+{
+  "name": "13 · AI content drafts (Instagram posts, reels, broadcasts)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1,4"
+            }
+          ]
+        }
+      },
+      "id": "195bbc43-9501-4204-8b0e-96270399d3ae",
+      "name": "Mon & Thu 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "content_inputs",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=week=eq.{{ $now.toFormat('kkkk-WW') }}"
+      },
+      "id": "e2bc0a22-6af3-4670-a33c-38a7aab8e382",
+      "name": "Best sellers & new items",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 1500, temperature: 0.8, system: \"You write Instagram captions, reel scripts and WhatsApp broadcasts for Temmiebakes, a Lagos cake and dessert business. Warm, playful, British English, no em dashes. Include price, lead time and the call to action DM CAKE. 5-6 Lagos hashtags. Return ONLY JSON: {\\\"drafts\\\":[{\\\"kind\\\":\\\"instagram-post|reel-script|whatsapp-broadcast\\\",\\\"product\\\":string,\\\"text\\\":string}]}\", messages: [{ role: \"user\", content: JSON.stringify($input.all().map((i) => i.json)) }] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "712fc0f9-120c-45ea-b2d7-833781c4af6b",
+      "name": "Claude: write drafts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Anthropic API key (x-api-key)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.content?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"drafts\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
+      },
+      "id": "3cbe1816-9ac3-4227-a04c-402ba3fac6e9",
+      "name": "Validate drafts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "5af0c9f7-458b-4f7d-a55a-b33fe349cf75",
+              "leftValue": "={{ !$json.needs_review }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "478b87db-2477-4ca1-b932-73eea652c7da",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: \"This week's AI drafts did not come out right, please check the content page.\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "3117ed7b-7f6f-4b38-a136-062270e07742",
+      "name": "Tell Temmie drafts failed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "return $json.ai.drafts.map((d) => ({ json: { ...d, status: \"awaiting-approval\", text: d.text.replace(/[—–]/g, \",\") } }));"
+      },
+      "id": "c21c7064-abb0-48e9-80c7-dbd8c8704bc3",
+      "name": "One row per draft",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "content_drafts",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "89909e4e-6534-40e5-a1af-defe07c0dc08",
+      "name": "Save to approval queue",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: \"New content drafts are ready to approve in the back office.\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "d1fbcf00-d58d-4b53-ad1a-4f5c9eba3afb",
+      "name": "Ping Temmie to approve",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Mon & Thu 07:00": {
+      "main": [
+        [
+          {
+            "node": "Best sellers & new items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Best sellers & new items": {
+      "main": [
+        [
+          {
+            "node": "Claude: write drafts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: write drafts": {
+      "main": [
+        [
+          {
+            "node": "Validate drafts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate drafts": {
+      "main": [
+        [
+          {
+            "node": "Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid?": {
+      "main": [
+        [
+          {
+            "node": "One row per draft",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell Temmie drafts failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One row per draft": {
+      "main": [
+        [
+          {
+            "node": "Save to approval queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to approval queue": {
+      "main": [
+        [
+          {
+            "node": "Ping Temmie to approve",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "ai"
+    },
+    {
+      "name": "marketing"
+    }
+  ]
+}

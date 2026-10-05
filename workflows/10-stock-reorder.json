@@ -1,0 +1,405 @@
+{
+  "name": "10 · Stock levels & supplier re-order",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Stock\nEach evening: ingredient use from tomorrow's bake sheet (recipes × orders) is deducted from stock. Anything below its re-order level becomes a draft purchase order per supplier; Temmie approves on WhatsApp (6h timeout) before it is sent.",
+        "width": 600,
+        "height": 200,
+        "color": 5
+      },
+      "id": "56314fb1-a1be-4a71-bd95-05221d111be8",
+      "name": "Note 291e",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 18 * * *"
+            }
+          ]
+        }
+      },
+      "id": "91bade52-163d-402a-bd8f-ae3637c0b260",
+      "name": "Daily 18:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "ingredient_levels",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=below_reorder=eq.true"
+      },
+      "id": "e31f1284-1923-4dac-9556-5e1370fefb22",
+      "name": "Low ingredients",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "1ff3f4ba-591b-4d23-9e04-2a3c5cad9c6a",
+              "leftValue": "={{ $json.id !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2abd1975-f6d4-4301-9e8b-5403b67c9b4a",
+      "name": "Anything low?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "28d384ba-7cf0-46a3-a5ed-0667c16be038",
+      "name": "Stock fine",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const by = {};\nfor (const { json: i } of $input.all()) { (by[i.supplier_id] ??= { supplier_id: i.supplier_id, supplier_phone: i.supplier_phone, supplier_name: i.supplier_name, lines: [] }).lines.push({ ingredient: i.name, qty: Math.max(i.reorder_qty, i.reorder_level * 2 - i.stock), unit: i.unit, cost_ngn: i.cost_per_unit }); }\nreturn Object.values(by).map((p) => ({ json: { ...p, total_ngn: p.lines.reduce((s, l) => s + l.qty * l.cost_ngn, 0), status: \"draft\" } }));"
+      },
+      "id": "a946e480-5aa1-4f9d-a668-4daa938e0a9a",
+      "name": "Draft POs by supplier",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "purchase_orders",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "ef6e8e82-de23-490c-8150-2443dd2f0e68",
+      "name": "Save draft PO",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "={{ $vars.WA_PHONE_NUMBER_ID }}",
+        "recipientPhoneNumber": "={{ $vars.OWNER_WHATSAPP }}",
+        "message": "={{ \"Re-order from \" + $json.supplier_name + \": \" + $json.lines.map((l) => l.qty + l.unit + \" \" + l.ingredient).join(\", \") + \". Approve?\" }}",
+        "responseType": "approval",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 6,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "11190caf-3f66-44eb-90ce-b0d3addae03a",
+      "name": "Ask Temmie to approve (wait 6h)",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "webhookId": "f2f911b6-ebb8-4496-a86f-aedf6aa9665e"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "389e797a-b8bc-4e47-b238-bb60a946eaf6",
+              "leftValue": "={{ $json.data.approved }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "89e93139-d84f-4e2b-a6b1-e24629784a6e",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6a3f7773-65fa-4c47-958a-98a57c2a88d8",
+      "name": "Not approved or timed out (stays draft)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Save draft PO\").item.json.supplier_phone, type: \"text\", text: { body: \"Hello from Temmiebakes. Please deliver: \" + $(\"Save draft PO\").item.json.lines.map((l) => l.qty + l.unit + \" \" + l.ingredient).join(\", \") + \". Thank you!\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "8cf1acad-acb6-4e55-a982-e565e3eaae5d",
+      "name": "Send PO to supplier",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "purchase_orders",
+        "filterType": "string",
+        "filterString": "=id=eq.{{ $(\"Save draft PO\").item.json.id }}",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "37d140ac-0525-4888-b1ba-b9801869f9d3",
+      "name": "Mark PO sent",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 18:00": {
+      "main": [
+        [
+          {
+            "node": "Low ingredients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Low ingredients": {
+      "main": [
+        [
+          {
+            "node": "Anything low?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anything low?": {
+      "main": [
+        [
+          {
+            "node": "Draft POs by supplier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stock fine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft POs by supplier": {
+      "main": [
+        [
+          {
+            "node": "Save draft PO",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save draft PO": {
+      "main": [
+        [
+          {
+            "node": "Ask Temmie to approve (wait 6h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Temmie to approve (wait 6h)": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Send PO to supplier",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Not approved or timed out (stays draft)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send PO to supplier": {
+      "main": [
+        [
+          {
+            "node": "Mark PO sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "stock"
+    }
+  ]
+}

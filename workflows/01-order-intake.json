@@ -1,0 +1,714 @@
+{
+  "name": "01 · Order intake: website, Instagram, WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Order intake\nOne entry point for the **website checkout, cake builder and Tia's confirmed orders**.\nNormalise → find or create customer (phone / Instagram handle) → price from the menu and cake rules → **capacity check** (oven points per day) → create order as *quoted* → Paystack deposit link → WhatsApp quote → schedule the 6h follow-up (03).",
+        "width": 640,
+        "height": 220,
+        "color": 4
+      },
+      "id": "74070852-b313-483e-ac3a-8ad56985a225",
+      "name": "Note 481e",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8846c355-fd54-4123-acad-54afbf0e4a65",
+      "name": "Webhook: checkout, cake builder, Tia",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "f111d170-7204-4b6e-889b-c31e3da86002"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(({ json: j }) => {\n  const b = j.body ?? {};\n  let phone = String(b.phone ?? \"\").replace(/[^\\d+]/g, \"\");\n  if (/^0\\d{10}$/.test(phone)) phone = \"+234\" + phone.slice(1);\n  return { json: { source: b.source ?? \"web\", name: String(b.name ?? \"\").trim(), phone, instagram: b.instagram ?? null, email: b.email ?? null,\n    items: b.items ?? [], cake: b.cake ?? null, due_date: b.due_date, due_time: b.due_time ?? \"14:00\", fulfilment: b.fulfilment ?? \"delivery\",\n    zone_id: b.zone_id ?? null, address: b.address ?? null, occasion: b.occasion ?? null, message_on_cake: b.message_on_cake ?? null, received_at: new Date().toISOString() } };\n});"
+      },
+      "id": "cd6ccc78-195f-4370-b291-06ae033b2460",
+      "name": "Normalise order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ea435ee1-534f-49d2-b6e2-583e5f522198",
+              "leftValue": "={{ Boolean($json.phone && $json.due_date && ($json.items.length || $json.cake)) }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "523ddc46-b085-4e3c-b2f2-b56266752631",
+      "name": "Has phone, items and date?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"phone, items and due date are required\" } }}",
+        "options": {}
+      },
+      "id": "66725456-d5a4-4995-a1ca-c2dec3ea0932",
+      "name": "Respond 422: missing details",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "customers",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=or=(phone.eq.{{ $json.phone }},instagram.eq.{{ $json.instagram || \"none\" }})"
+      },
+      "id": "9a943a60-072d-45e6-aed6-a0e73f24d60d",
+      "name": "Find customer",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const o = $(\"Normalise order\").first().json;\nconst c = $input.all().map((i) => i.json).find((x) => x.id);\nreturn [{ json: { id: c?.id, name: c?.name ?? o.name, phone: o.phone, instagram: c?.instagram ?? o.instagram, zone_id: o.zone_id ?? c?.zone_id, source: c?.source ?? o.source, is_new: !c } }];"
+      },
+      "id": "83bf373f-9bb4-40e2-bf0d-517f9f392702",
+      "name": "Customer upsert payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "tableId": "customers",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "e733e4b3-b199-4b56-93af-5c069e118948",
+      "name": "Upsert customer",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "price_book",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=active=eq.true"
+      },
+      "id": "7f0d8bfd-228e-405f-9eb5-5f4999a15150",
+      "name": "Load menu, cake rules, zones",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Same rules as the website: size base + tiers + flavour/filling/finish/decoration extras, zone delivery fee\nconst book = Object.fromEntries($input.all().map((i) => [i.json.key, i.json]));\nconst o = $(\"Normalise order\").first().json;\nlet subtotal = 0, oven_points = 0, lead_days = 1;\nfor (const it of o.items) { const p = book[\"product:\" + it.product_id]; if (!p) throw new Error(\"Unknown product \" + it.product_id); subtotal += p.price_ngn * it.qty; oven_points += p.oven_points * it.qty; lead_days = Math.max(lead_days, p.lead_days); }\nif (o.cake) {\n  const c = o.cake; const base = book[\"size:\" + c.size_inches]?.price_ngn;\n  if (!base) throw new Error(\"Unsupported cake size \" + c.size_inches);\n  const tierMult = [0, 1, 1.85, 2.6, 3.3][c.tiers ?? 1];\n  subtotal += Math.round((base * tierMult + (book[\"flavour:\" + c.flavour]?.price_ngn ?? 0) + (book[\"filling:\" + c.filling]?.price_ngn ?? 0) + (book[\"finish:\" + c.finish]?.price_ngn ?? 0) + (book[\"decoration:\" + c.decoration]?.price_ngn ?? 0)) / 500) * 500;\n  oven_points += (c.tiers ?? 1) * 2 + (c.size_inches >= 10 ? 1 : 0); lead_days = Math.max(lead_days, c.tiers > 1 ? 4 : 2);\n}\nconst delivery = o.fulfilment === \"delivery\" ? (book[\"zone:\" + o.zone_id]?.price_ngn ?? null) : 0;\nif (delivery === null) throw new Error(\"Unknown delivery zone \" + o.zone_id);\nconst daysAhead = (new Date(o.due_date) - new Date(new Date().toISOString().slice(0, 10))) / 86400000;\nreturn [{ json: { ...o, customer_id: $(\"Upsert customer\").first().json.id, subtotal_ngn: subtotal, delivery_ngn: delivery, total_ngn: subtotal + delivery, deposit_ngn: Math.ceil((subtotal + delivery) * 0.5 / 100) * 100, oven_points, lead_days, lead_ok: daysAhead >= lead_days } }];"
+      },
+      "id": "204bac71-59e7-4e0a-affb-0f1ac0fc5ffc",
+      "name": "Price the order",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=due_date=eq.{{ $json.due_date }}&status=not.in.(cancelled,enquiry)"
+      },
+      "id": "1df8669c-2c18-46eb-b8dc-9e3506b3bdf7",
+      "name": "Orders booked that day",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst booked = $input.all().reduce((s, i) => s + Number(i.json.oven_points ?? 0), 0);\nconst want = Number($(\"Price the order\").first().json.oven_points ?? 1);\nconst day = $(\"Price the order\").first().json.due_date;\nconst sunday = new Date(day + \"T12:00:00Z\").getUTCDay() === 0;\nreturn [{ json: { ...$(\"Price the order\").first().json, booked, capacity: cap, fits: !sunday && booked + want <= cap, reason: sunday ? \"Closed on Sundays\" : booked + want > cap ? \"Kitchen full that day\" : null } }];"
+      },
+      "id": "1b1ad240-ccea-4784-9d39-a3ffdf9f1d1f",
+      "name": "Capacity check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "5beaf2af-d3be-4a67-947e-e89cabdb2eef",
+              "leftValue": "={{ $json.fits && $json.lead_ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f15fa3dc-b0f1-4cfd-b22a-cef6c34baf80",
+      "name": "Fits lead time and kitchen?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Offer the earliest day with room instead of refusing\nreturn [{ json: { ...$json, ok: false, message: ($json.reason ?? \"That date is too soon for this order\") + \". The next free date is in the reply.\" } }];"
+      },
+      "id": "c7207de5-bd7b-4387-923e-fcc897ccbe06",
+      "name": "Find next free date",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, reason: $json.message } }}",
+        "options": {}
+      },
+      "id": "b54eb589-7fcc-4fc4-a9ae-c52d4d7333be",
+      "name": "Respond: date unavailable",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2880,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const n = \"TB-\" + String(Math.floor(1000 + Math.random() * 9000));\nreturn [{ json: { ...$json, number: n, status: \"quoted\", payment_status: \"unpaid\", paid_ngn: 0, assisted_by_ai: $json.source !== \"web\" } }];"
+      },
+      "id": "3da9df0d-2135-4891-b05c-97678516e7db",
+      "name": "Order row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "orders",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "6be2993a-cfe2-4987-a825-df35a4922c9a",
+      "name": "Create order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        -260
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.paystack.co/transaction/initialize",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email || ($json.phone.replace(\"+\", \"\") + \"@wa.temmiebakes.ng\"), amount: $json.deposit_ngn * 100, reference: $json.number + \"-dep\", currency: \"NGN\", callback_url: \"https://temmiebakes.ng/track/\" + $json.number + \"-dep\".split(\"-dep\")[0] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "a417998c-cd96-4fba-a6b0-63fe255ee000",
+      "name": "Paystack: deposit link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        -260
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Paystack secret key (Authorization: Bearer)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Order row\").first().json.phone, type: \"text\", text: { body: `Hi ${$(\"Order row\").first().json.name.split(\" \")[0]}! Your order ${$(\"Order row\").first().json.number} comes to ₦${$(\"Order row\").first().json.total_ngn.toLocaleString()}. Pay the 50% deposit (₦${$(\"Order row\").first().json.deposit_ngn.toLocaleString()}) to lock your date: ${$json.data.authorization_url}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "b49dc075-60ab-40a3-89a5-852030df0b0e",
+      "name": "WhatsApp quote with pay link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3360,
+        -260
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"order-intake\",\n  title: `Order ${$(\"Order row\").first().json.number} quoted automatically`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 12,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "0f76008e-9854-42b0-be58-be5492a24630",
+      "name": "Log intake event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "automation_events",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "3da62232-c6d9-4194-8dd1-9f6555405b92",
+      "name": "Write automation_events",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3840,
+        -260
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": "REPLACE_WITH_03_ID",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "d97747cb-f2d6-41e9-ac4c-7d27b8013a6f",
+      "name": "Start quote follow-up (03)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        4080,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, number: $(\"Order row\").first().json.number } }}",
+        "options": {}
+      },
+      "id": "37768ca5-13f2-443d-bdc0-8e8e1947147a",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        4320,
+        -260
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: checkout, cake builder, Tia": {
+      "main": [
+        [
+          {
+            "node": "Normalise order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise order": {
+      "main": [
+        [
+          {
+            "node": "Has phone, items and date?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has phone, items and date?": {
+      "main": [
+        [
+          {
+            "node": "Find customer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 422: missing details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find customer": {
+      "main": [
+        [
+          {
+            "node": "Customer upsert payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer upsert payload": {
+      "main": [
+        [
+          {
+            "node": "Upsert customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert customer": {
+      "main": [
+        [
+          {
+            "node": "Load menu, cake rules, zones",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load menu, cake rules, zones": {
+      "main": [
+        [
+          {
+            "node": "Price the order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price the order": {
+      "main": [
+        [
+          {
+            "node": "Orders booked that day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orders booked that day": {
+      "main": [
+        [
+          {
+            "node": "Capacity check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capacity check": {
+      "main": [
+        [
+          {
+            "node": "Fits lead time and kitchen?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fits lead time and kitchen?": {
+      "main": [
+        [
+          {
+            "node": "Order row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find next free date",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find next free date": {
+      "main": [
+        [
+          {
+            "node": "Respond: date unavailable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Order row": {
+      "main": [
+        [
+          {
+            "node": "Create order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create order": {
+      "main": [
+        [
+          {
+            "node": "Paystack: deposit link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paystack: deposit link": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp quote with pay link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp quote with pay link": {
+      "main": [
+        [
+          {
+            "node": "Log intake event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log intake event": {
+      "main": [
+        [
+          {
+            "node": "Write automation_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write automation_events": {
+      "main": [
+        [
+          {
+            "node": "Start quote follow-up (03)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start quote follow-up (03)": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "orders"
+    }
+  ]
+}

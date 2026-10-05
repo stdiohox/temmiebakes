@@ -1,0 +1,362 @@
+{
+  "name": "06 · Birthday & anniversary reminders (14 days ahead)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Occasion reminders\nEvery morning: customers whose saved occasion is 14 days away and who opted in to WhatsApp get a personal message with last year's cake and free delivery this week. Never more than one reminder per occasion per year.",
+        "width": 600,
+        "height": 200,
+        "color": 5
+      },
+      "id": "4467307e-7f41-4faf-b1b7-5f43df6cf7a5",
+      "name": "Note 0592",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "30 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "05abb3d9-489b-442a-9088-24927f676d90",
+      "name": "Daily 09:30",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "customer_occasions_due",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=days_until=eq.14&consent_whatsapp=eq.true"
+      },
+      "id": "b69b5470-cfff-43b3-b624-2f7a7bd0c509",
+      "name": "Occasions in 14 days",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8a5fc923-1e61-4ce8-90bc-cde02114aadf",
+              "leftValue": "={{ $json.customer_id !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "938bb62f-de11-4142-a7cf-9efe008086d5",
+      "name": "Anyone due?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8158b981-623e-4e11-b22b-56557074d0ea",
+      "name": "No occasions today",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "outbound",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=customer_id=eq.{{ $json.customer_id }}&automation=eq.occasion-reminders&created_at=gte.{{ $now.minus({ days: 300 }).toISO() }}"
+      },
+      "id": "270c323d-d952-4b28-95e0-ae812292e3b1",
+      "name": "Already reminded this year?",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b14c1eae-eea3-4a12-9233-f07631834bcf",
+              "leftValue": "={{ $json.id === undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "14cfd4f8-04c1-4595-8c4b-6f3f5a00fdac",
+      "name": "Not yet reminded?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "3ce65723-0eb5-4d0a-8156-e83ea96f878c",
+      "name": "Skip: already reminded",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Occasions in 14 days\").item.json.phone, type: \"text\", text: { body: `Hi ${$(\"Occasions in 14 days\").item.json.first_name}! ${$(\"Occasions in 14 days\").item.json.label} is on ${$(\"Occasions in 14 days\").item.json.date_label}. Last time it was the ${$(\"Occasions in 14 days\").item.json.last_item ?? \"cake\"} 🎂 Shall we bake something special again? Order this week and delivery is free.` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "5550341c-34bb-4dd7-b8b6-344dae3bf2f3",
+      "name": "Personal reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"occasion-reminders\",\n  title: \"Occasion reminder sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 6,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "6172746e-6655-43bb-a309-50f7ba1f09c1",
+      "name": "Log reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "outbound",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "ce84e6e7-4911-4372-a5d9-1a6a891f9763",
+      "name": "Write outbound",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -140
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 09:30": {
+      "main": [
+        [
+          {
+            "node": "Occasions in 14 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Occasions in 14 days": {
+      "main": [
+        [
+          {
+            "node": "Anyone due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anyone due?": {
+      "main": [
+        [
+          {
+            "node": "Already reminded this year?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No occasions today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Already reminded this year?": {
+      "main": [
+        [
+          {
+            "node": "Not yet reminded?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Not yet reminded?": {
+      "main": [
+        [
+          {
+            "node": "Personal reminder",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip: already reminded",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personal reminder": {
+      "main": [
+        [
+          {
+            "node": "Log reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log reminder": {
+      "main": [
+        [
+          {
+            "node": "Write outbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "retention"
+    }
+  ]
+}

@@ -1,0 +1,576 @@
+{
+  "name": "12 · Corporate catering quotes & proposals",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Corporate\nCompany enquiry (website form or Tia) → package priced per guest → Claude writes a short proposal from the approved package copy → PDF-ready HTML emailed to the client and logged as *sent*. A 3-day follow-up runs if there's no answer.",
+        "width": 600,
+        "height": 200,
+        "color": 5
+      },
+      "id": "962ae746-8cc2-4d2b-b518-5d44f6a60a74",
+      "name": "Note 63ab",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "corporate",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9046242a-fe2d-4f07-b792-e7c3177844c6",
+      "name": "Webhook: corporate enquiry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "fdb3ed75-9748-4140-93cb-918d3736b650"
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $json.body;\nconst PER_GUEST = { \"breakfast-box\": 7500, \"canape-reception\": 11000, \"dessert-table\": 9000, \"cake-and-cupcakes\": 4500 };\nif (!PER_GUEST[b.package_id]) return [{ json: { ...b, valid: false } }];\nconst guests = Math.max(10, Number(b.guests) || 0);\nconst total = PER_GUEST[b.package_id] * guests + (guests > 100 ? 0 : 15000);\nreturn [{ json: { ...b, guests, per_guest_ngn: PER_GUEST[b.package_id], total_ngn: total, valid: true } }];"
+      },
+      "id": "71cb996a-352a-45db-8810-12b96919a19d",
+      "name": "Price package",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "78ca2251-16cf-4b3f-94cb-6ac5edd6cce6",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f84e106b-54fe-4441-a01f-86177a70b7ea",
+      "name": "Known package?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: \"unknown package\" } }}",
+        "options": {}
+      },
+      "id": "1ad73cc1-8bf1-4762-8411-33c40746a89a",
+      "name": "Respond 422",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 700, temperature: 0.5, system: \"Write a concise catering proposal (under 160 words) from Temmiebakes, Lagos, for the event described. Use ONLY the figures given. British English, no em dashes. Terms: 50% deposit to confirm, balance 48 hours before the event.\", messages: [{ role: \"user\", content: JSON.stringify($json) }] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "add4e9b5-cb64-4787-b754-a33187eeda09",
+      "name": "Claude: proposal text",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Anthropic API key (x-api-key)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $json.content?.[0]?.text ?? \"\";\nconst q = $(\"Price package\").first().json;\nconst ok = t.includes(q.total_ngn.toLocaleString(\"en-GB\")) || t.includes(String(q.total_ngn));\nreturn [{ json: { ...q, proposal: t, needs_review: !ok || /—|–/.test(t) } }];"
+      },
+      "id": "288e0dec-5746-4eb3-80f7-861776a937dd",
+      "name": "Validate proposal",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "catering_quotes",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "140e62ac-77a5-4fb0-a16c-31c14affe3d5",
+      "name": "Save quote",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "d57049ed-48dd-49a9-adf5-88638f3862d4",
+              "leftValue": "={{ $json.needs_review }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8c301778-31e3-42ca-b88a-c7f2be8f556d",
+      "name": "Needs Temmie's eye?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `Corporate quote for ${$json.company} needs a quick check before sending.` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "4fcf13f5-94c7-498f-9c66-50e6b0c84d2b",
+      "name": "Ask Temmie to check",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        80
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: \"Temmiebakes <hello@temmiebakes.ng>\", to: [$json.email], subject: \"Your Temmiebakes catering proposal\", text: $json.proposal }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "33fa3890-ee88-4f3e-9756-515f62b076f3",
+      "name": "Email proposal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        -160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Resend API (Authorization: Bearer)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "id": "394d8b79-d92b-495c-96ee-edbd5d0cdaa2",
+      "name": "Wait 3 days",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        -160
+      ],
+      "webhookId": "dee88ab0-02af-4971-b890-c0ba30395aac"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "catering_quotes",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=id=eq.{{ $(\"Save quote\").first().json.id }}"
+      },
+      "id": "ad451049-9759-48e3-a03e-5dca4d976e0b",
+      "name": "Quote status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        -160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "5cfd87a1-64fa-46c9-93c8-bc5d60925bf8",
+              "leftValue": "={{ $json.status === \"sent\" }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "9f87804c-45f7-4d37-b299-b45e4b7f672c",
+      "name": "Still open?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: \"Temmiebakes <hello@temmiebakes.ng>\", to: [$json.email], subject: \"Following up on your catering proposal\", text: \"Hello, just checking the proposal reached you. Happy to adjust the menu or numbers.\" }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "d0d28b50-adc6-4e29-88cb-a442175396dc",
+      "name": "Follow-up email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2640,
+        -240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Resend API (Authorization: Bearer)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {},
+      "id": "d941dada-c7c9-4533-9c44-0b4a8614c42a",
+      "name": "Answered (accepted or declined)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        -80
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: corporate enquiry": {
+      "main": [
+        [
+          {
+            "node": "Price package",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Price package": {
+      "main": [
+        [
+          {
+            "node": "Known package?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Known package?": {
+      "main": [
+        [
+          {
+            "node": "Claude: proposal text",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 422",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: proposal text": {
+      "main": [
+        [
+          {
+            "node": "Validate proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate proposal": {
+      "main": [
+        [
+          {
+            "node": "Save quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save quote": {
+      "main": [
+        [
+          {
+            "node": "Needs Temmie's eye?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Temmie's eye?": {
+      "main": [
+        [
+          {
+            "node": "Ask Temmie to check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Email proposal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email proposal": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 days": {
+      "main": [
+        [
+          {
+            "node": "Quote status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote status": {
+      "main": [
+        [
+          {
+            "node": "Still open?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Still open?": {
+      "main": [
+        [
+          {
+            "node": "Follow-up email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Answered (accepted or declined)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "corporate"
+    }
+  ]
+}

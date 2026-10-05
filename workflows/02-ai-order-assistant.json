@@ -1,0 +1,1220 @@
+{
+  "name": "02 · Tia: AI order assistant (Instagram, WhatsApp, website)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Tia, the 24/7 order assistant\n- **Gemini** classifies intent and extracts slots (size, flavour, date, Lagos area, guests, name, phone). Understands Pidgin.\n- **Handoff rules run before any reply**: complaints, discounts, 'talk to Temmie', wedding cakes, orders over ₦500k.\n- **Claude** writes the reply in Temmie's voice using ONLY the price book, knowledge base and live capacity.\n- A guardrail checks prices and promises before sending.\n- When all slots are filled, the order goes to intake (01).",
+        "width": 680,
+        "height": 260,
+        "color": 6
+      },
+      "id": "e2e21536-175d-47ba-ab00-d6b2aae6c717",
+      "name": "Note f422",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tia/instagram",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f4f00a71-bbe9-40e8-a341-afacc7e75163",
+      "name": "Webhook: Instagram DMs",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "30980edc-cb77-4e1e-af06-4505380c0a76"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tia/whatsapp",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "b483425f-9213-46a8-b25a-0b0b118f294b",
+      "name": "Webhook: WhatsApp Cloud API",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "webhookId": "1123b540-abc6-40a1-bef9-b7500dcd31a2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tia/web",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5f86531f-2391-467d-9bad-38046cbd42e7",
+      "name": "Webhook: website chat",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        400
+      ],
+      "webhookId": "0d90a2ae-46f0-48e8-a8e3-f9010b6a87cc"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(({ json: j }) => {\n  const b = j.body ?? {};\n  const waMsg = b.entry?.[0]?.changes?.[0]?.value?.messages?.[0];\n  const igMsg = b.entry?.[0]?.messaging?.[0];\n  return { json: { channel: waMsg ? \"whatsapp\" : igMsg ? \"instagram\" : \"web\", sender: waMsg?.from ?? igMsg?.sender?.id ?? b.visitor_id, text: waMsg?.text?.body ?? igMsg?.message?.text ?? b.text ?? \"\" } };\n}).filter((i) => i.json.text);"
+      },
+      "id": "940fcf9e-86f9-4376-b58e-ea9000307754",
+      "name": "Normalise message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "conversations",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=sender=eq.{{ $json.sender }}"
+      },
+      "id": "bc4d31ee-e5b0-4423-85f1-090cc55c46ea",
+      "name": "Load conversation & draft",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        520,
+        200
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "92d9e5ae-db25-4e1c-bd15-ff213bef7390",
+              "leftValue": "={{ $json.status === \"staff\" || $json.status === \"handoff\" }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e3495653-08d2-4594-9090-0ad0a5b3c7b8",
+      "name": "Temmie already handling?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        780,
+        200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e8c21ae0-33aa-4c7e-ba3e-d482ba97dac5",
+      "name": "Done: left for Temmie (no AI reply)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: `You read DMs for a Lagos cake business. Messages may be in Nigerian Pidgin. Return ONLY JSON: {\"intent\":\"order|price|menu|class|corporate|track|complaint|discount|human|wedding|other\",\"size_inches\":number|null,\"tiers\":number|null,\"flavour\":string|null,\"product\":string|null,\"qty\":number|null,\"date\":\"YYYY-MM-DD\"|null,\"area\":string|null,\"guests\":number|null,\"name\":string|null,\"phone\":string|null,\"order_number\":string|null}. Do not use \\`\\`\\`json. Output must start with { and end with }.\\nToday: ${$now.toFormat(\"yyyy-LL-dd\")}\\nMessage: ${$(\"Normalise message\").first().json.text}` }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 256, responseMimeType: \"application/json\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "51292053-f52f-4884-a3d9-595666d1ef90",
+      "name": "Gemini: classify & extract",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        260
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Gemini API key (?key=)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"intent\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
+      },
+      "id": "fd334587-c794-4268-a340-e133046db41e",
+      "name": "Validate classification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1300,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const draft = { ...($(\"Load conversation & draft\").first().json.draft ?? {}) };\nconst a = $json.ai ?? {};\nfor (const [k, val] of Object.entries(a)) if (val !== null && k !== \"intent\") draft[k] = val;\nconst settings = $vars.TIA_HANDOFF ? JSON.parse($vars.TIA_HANDOFF) : [];\nconst text = $(\"Normalise message\").first().json.text.toLowerCase();\nconst hit = settings.find((h) => h.enabled && h.keywords.some((k) => text.includes(k)));\nconst handoff = $json.needs_review ? \"Could not understand the message\" : hit?.label ?? ([\"complaint\", \"discount\", \"human\", \"wedding\"].includes(a.intent) ? a.intent : null);\nconst missing = [\"size_inches\", \"flavour\", \"date\", \"area\", \"name\", \"phone\"].filter((k) => a.intent === \"order\" && !draft[k]);\nreturn [{ json: { ...$(\"Normalise message\").first().json, intent: a.intent ?? \"other\", draft, handoff, missing, ready: a.intent === \"order\" && missing.length === 0 } }];"
+      },
+      "id": "bea7a424-e07d-4f35-9dd1-83cdf35b0e6e",
+      "name": "Merge draft & apply handoff rules",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1560,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "af3ad08b-6875-4ec3-b485-c33077acc135",
+                    "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
+                    "rightValue": "handoff",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "handoff"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "46cae60d-cc17-403a-a7d1-9d87fced62ab",
+                    "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
+                    "rightValue": "order",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "a4fb6d84-8ea6-4d7e-8ddb-9ad498bad701",
+                    "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
+                    "rightValue": "track",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "track"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "42844b30-4429-4e0f-9971-84aee26700c8",
+                    "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
+                    "rightValue": "reply",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "reply"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown"
+        }
+      },
+      "id": "72667b10-47a9-40c1-8ce7-868538ce7607",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1820,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$json, reply: \"Thank you! I'm passing this to Temmie personally and she'll reply here shortly.\", status: \"handoff\" } }];"
+      },
+      "id": "8dc1047b-22f4-4ec4-8053-ba70f538b451",
+      "name": "Handoff message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `Tia handed over a ${$json.channel} chat (${$json.handoff}): \"${$json.text}\"` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "1c309953-f24a-4caa-aab3-42f4f7eb7144",
+      "name": "Alert Temmie: chat needs you",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        40
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": "REPLACE_WITH_01_ID",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "064d1df0-1e26-4a07-bf9c-89aa6c5f9b1b",
+      "name": "Create order via intake (01)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        2080,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=number=eq.{{ $json.draft.order_number }}"
+      },
+      "id": "53f02264-b163-482b-84a0-10f2045e0aa0",
+      "name": "Look up order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "kb_entries",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=approved=eq.true"
+      },
+      "id": "e7d089b0-9875-4a3a-9701-e3b9a0d15885",
+      "name": "Approved knowledge & price book",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        520
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 400, temperature: 0.5, system: \"You are Tia, the AI assistant for Temmiebakes, a cake and dessert business in Ikeja, Lagos. Be warm and brief, 1-3 sentences, British English, no em dashes. Say you are an AI in the first reply. Quote ONLY prices from the price book provided. Never promise discounts or same-day orders. If details are missing ask for at most two of: \" + $(\"Merge draft & apply handoff rules\").first().json.missing.join(\", \"), messages: [{ role: \"user\", content: \"Knowledge: \" + JSON.stringify($input.all().map((i) => i.json)) + \"\\nDraft: \" + JSON.stringify($(\"Merge draft & apply handoff rules\").first().json.draft) + \"\\nCustomer: \" + $(\"Merge draft & apply handoff rules\").first().json.text }] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "c096dc92-060f-49ac-b11f-a3d8d2402921",
+      "name": "Claude: write Tia's reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        440
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Anthropic API key (x-api-key)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Block replies that invent prices or promise discounts; send them to Temmie instead.\nconst text = $json.content?.[0]?.text ?? \"\";\nconst book = $(\"Approved knowledge & price book\").all().map((i) => JSON.stringify(i.json)).join(\" \");\nconst prices = (text.match(/₦\\s?[\\d,]+/g) ?? []).map((p) => p.replace(/[^\\d]/g, \"\"));\nconst invented = prices.filter((p) => !book.includes(p));\nconst bad = !text || /discount|free cake|guarantee/i.test(text) || invented.length > 0 || /—|–/.test(text);\nreturn [{ json: { ...$(\"Merge draft & apply handoff rules\").first().json, reply: bad ? null : text, status: bad ? \"handoff\" : \"ai\", guard_reason: bad ? (invented.length ? \"Price not in price book: \" + invented.join(\", \") : \"Reply failed guardrail\") : null } }];"
+      },
+      "id": "6c18da68-5c4a-4c25-943f-4be2359a8cca",
+      "name": "Guardrail check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "ba3cc21e-cfc5-4248-a96e-a6bb8b161fce",
+              "leftValue": "={{ $json.reply !== null }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "173a8e8c-c5a1-4d41-b4dd-0a19cc0a3496",
+      "name": "Guardrail passed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2860,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `Tia held back a reply (${$json.guard_reason}). Please answer: \"${$json.text}\"` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "83b2a476-b8a4-4d38-8af8-7b6e4fc1658b",
+      "name": "Alert Temmie: reply blocked",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3120,
+        600
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "ea1e27fc-8969-4ea6-8534-af93b3d44e2f",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "whatsapp",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "whatsapp"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "793dd565-1c4c-4145-9e49-a95bd4b5c7d1",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "instagram"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "b9334503-95a6-48a2-9c55-ecc953e9f851",
+                    "leftValue": "={{ $json.channel }}",
+                    "rightValue": "web",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "web"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown"
+        }
+      },
+      "id": "c7ab49f5-cdfe-4321-bd9a-fc52e544dce6",
+      "name": "Reply channel",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        3120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.sender, type: \"text\", text: { body: $json.reply } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "339a4c08-55d3-49ad-9482-4e735e46aad4",
+      "name": "Send on WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3380,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.IG_BUSINESS_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ recipient: { id: $json.sender }, message: { text: $json.reply } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "00cde5bb-d7e5-427e-a36e-196685ba02df",
+      "name": "Send on Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3380,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Instagram Graph API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { reply: $json.reply } }}",
+        "options": {}
+      },
+      "id": "777be502-b8fb-43f0-8ab4-7b1f92fbc3d0",
+      "name": "Reply to website chat",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        3380,
+        440
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4f0e0884-b8be-4691-a26c-39e46b5dbf85",
+      "name": "Unknown channel (flag)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        3380,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const m = $(\"Merge draft & apply handoff rules\").first().json;\nreturn [{ json: { sender: m.sender, channel: m.channel, draft: m.draft, status: $json.status ?? \"ai\", last_at: new Date().toISOString() } }];"
+      },
+      "id": "c3294717-f176-4262-a23f-587cef7ae9d8",
+      "name": "Conversation update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3640,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "tableId": "conversations",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "ce2679ee-d308-4707-9889-b2b7c3150377",
+      "name": "Upsert conversation",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        3880,
+        300
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"ai-assistant\",\n  title: `Tia replied (${$(\"Merge draft & apply handoff rules\").first().json.intent})`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 3,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "3863abd5-2667-419e-a172-6dd8fafa947f",
+      "name": "Log Tia event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4120,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "automation_events",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "5d1cd2d4-57f6-4c9b-b5bb-a8c04e3caed1",
+      "name": "Write automation_events",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        4360,
+        300
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "f9647142-7525-4b49-ac0c-d645b232ca01",
+      "name": "Unknown route (flag for review)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        680
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: Instagram DMs": {
+      "main": [
+        [
+          {
+            "node": "Normalise message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: WhatsApp Cloud API": {
+      "main": [
+        [
+          {
+            "node": "Normalise message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook: website chat": {
+      "main": [
+        [
+          {
+            "node": "Normalise message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise message": {
+      "main": [
+        [
+          {
+            "node": "Load conversation & draft",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load conversation & draft": {
+      "main": [
+        [
+          {
+            "node": "Temmie already handling?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Temmie already handling?": {
+      "main": [
+        [
+          {
+            "node": "Done: left for Temmie (no AI reply)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini: classify & extract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: classify & extract": {
+      "main": [
+        [
+          {
+            "node": "Validate classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate classification": {
+      "main": [
+        [
+          {
+            "node": "Merge draft & apply handoff rules",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge draft & apply handoff rules": {
+      "main": [
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Handoff message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create order via intake (01)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Look up order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Approved knowledge & price book",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown route (flag for review)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handoff message": {
+      "main": [
+        [
+          {
+            "node": "Alert Temmie: chat needs you",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Reply channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Temmie: chat needs you": {
+      "main": [
+        [
+          {
+            "node": "Conversation update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Look up order": {
+      "main": [
+        [
+          {
+            "node": "Approved knowledge & price book",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved knowledge & price book": {
+      "main": [
+        [
+          {
+            "node": "Claude: write Tia's reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: write Tia's reply": {
+      "main": [
+        [
+          {
+            "node": "Guardrail check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail check": {
+      "main": [
+        [
+          {
+            "node": "Guardrail passed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardrail passed?": {
+      "main": [
+        [
+          {
+            "node": "Reply channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Alert Temmie: reply blocked",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Temmie: reply blocked": {
+      "main": [
+        [
+          {
+            "node": "Conversation update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply channel": {
+      "main": [
+        [
+          {
+            "node": "Send on WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send on Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply to website chat",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown channel (flag)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send on WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Conversation update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send on Instagram": {
+      "main": [
+        [
+          {
+            "node": "Conversation update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reply to website chat": {
+      "main": [
+        [
+          {
+            "node": "Conversation update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation update": {
+      "main": [
+        [
+          {
+            "node": "Upsert conversation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert conversation": {
+      "main": [
+        [
+          {
+            "node": "Log Tia event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Tia event": {
+      "main": [
+        [
+          {
+            "node": "Write automation_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "ai"
+    },
+    {
+      "name": "assistant"
+    }
+  ]
+}

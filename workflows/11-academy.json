@@ -1,0 +1,550 @@
+{
+  "name": "11 · Academy: class enquiries, seat booking, reminders, certificates",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "academy/book",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4d755720-a0ea-4f4f-a06b-9f182e231a67",
+      "name": "Webhook: class booking (website, Tia)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "a0e501db-d1c6-4a97-a062-03b8ed182095"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "cohorts",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=id=eq.{{ $json.body.cohort_id }}"
+      },
+      "id": "a53c4f35-f6fa-4d74-9f1f-476e3abbc649",
+      "name": "Load cohort",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "43f4a1e1-be41-4bf9-af5d-b16566810e29",
+              "leftValue": "={{ $json.seats_taken < $json.seats }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "501c5a10-92ed-4461-907f-84734b9c3682",
+      "name": "Seat available?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ...$(\"Webhook: class booking (website, Tia)\").first().json.body, status: \"waitlist\" } }];"
+      },
+      "id": "0f3bdec9-f507-4219-9af5-c2f38fd4653d",
+      "name": "Waitlist",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "enrollments",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "f07dd021-668a-4280-8390-5f6ae4994d43",
+      "name": "Add to waitlist",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        140
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, waitlist: true } }}",
+        "options": {}
+      },
+      "id": "e292fa70-9b5c-4a21-8078-1b6869799a23",
+      "name": "Respond: waitlisted",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const b = $(\"Webhook: class booking (website, Tia)\").first().json.body;\nreturn [{ json: { cohort_id: b.cohort_id, customer_id: b.customer_id, phone: b.phone, status: \"reserved\", deposit_ngn: Math.round($(\"Load cohort\").first().json.price_ngn / 2) } }];"
+      },
+      "id": "324ec818-0679-498c-bf80-5f3981e07a7d",
+      "name": "Enrolment row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "enrollments",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "f9b3afe3-1474-4f53-808f-e994c73549c4",
+      "name": "Reserve seat",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.paystack.co/transaction/initialize",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.phone.replace(\"+\", \"\") + \"@wa.temmiebakes.ng\", amount: $json.deposit_ngn * 100, reference: \"AC-\" + $json.id + \"-dep\", currency: \"NGN\", callback_url: \"https://temmiebakes.ng/track/\" + \"AC-\" + $json.id + \"-dep\".split(\"-dep\")[0] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "28a33792-155d-42ff-9129-8035663dec46",
+      "name": "Paystack: class deposit",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Paystack secret key (Authorization: Bearer)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Enrolment row\").first().json.phone, type: \"text\", text: { body: `Your seat is reserved! Pay the 50% deposit to confirm: ${$json.data.authorization_url}. We send the kit list a week before class.` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "13b24e34-7303-451d-bc95-0695dd858184",
+      "name": "Send seat + pay link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true } }}",
+        "options": {}
+      },
+      "id": "4db02e39-1764-414a-9dfe-754f0c914c2f",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 9 * * *"
+            }
+          ]
+        }
+      },
+      "id": "6be05104-226a-4420-a8ba-c1d9c6f4f480",
+      "name": "Daily 09:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "enrollments_upcoming",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=days_until=eq.7"
+      },
+      "id": "dac53cf6-7901-4a93-a977-e656b45b89d3",
+      "name": "Classes starting in 7 days",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "b154da2e-56f3-495f-925b-4aa03782061b",
+              "leftValue": "={{ $json.id !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e1403004-1758-4224-a106-21fc1d83fe32",
+      "name": "Anyone starting?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        360
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1fa1d076-ad85-464e-ab23-b343f9dd2a3f",
+      "name": "No classes next week",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.phone, type: \"text\", text: { body: `See you on ${$json.start_label} for ${$json.course_title}! Bring an apron and a notebook; everything else is provided. Studio: ${$vars.STUDIO_ADDRESS}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "34712e0e-fa38-4cbb-a071-ad479bb28bab",
+      "name": "Kit list & directions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Webhook: class booking (website, Tia)": {
+      "main": [
+        [
+          {
+            "node": "Load cohort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load cohort": {
+      "main": [
+        [
+          {
+            "node": "Seat available?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seat available?": {
+      "main": [
+        [
+          {
+            "node": "Enrolment row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Waitlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Waitlist": {
+      "main": [
+        [
+          {
+            "node": "Add to waitlist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to waitlist": {
+      "main": [
+        [
+          {
+            "node": "Respond: waitlisted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enrolment row": {
+      "main": [
+        [
+          {
+            "node": "Reserve seat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reserve seat": {
+      "main": [
+        [
+          {
+            "node": "Paystack: class deposit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paystack: class deposit": {
+      "main": [
+        [
+          {
+            "node": "Send seat + pay link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send seat + pay link": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 09:00": {
+      "main": [
+        [
+          {
+            "node": "Classes starting in 7 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classes starting in 7 days": {
+      "main": [
+        [
+          {
+            "node": "Anyone starting?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anyone starting?": {
+      "main": [
+        [
+          {
+            "node": "Kit list & directions",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No classes next week",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "academy"
+    }
+  ]
+}

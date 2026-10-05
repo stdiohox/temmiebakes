@@ -1,0 +1,266 @@
+{
+  "name": "09 · Kitchen capacity guard",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Capacity guard\nEvery 2 hours: oven points booked per day for the next 7 days. Days at 90%+ are marked full so Tia and the website offer the next free date, and Temmie gets one alert per day.",
+        "width": 560,
+        "height": 180,
+        "color": 5
+      },
+      "id": "3012a6b2-e808-44bd-ba1d-b09364996947",
+      "name": "Note 9cb0",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2
+            }
+          ]
+        }
+      },
+      "id": "b25724fa-979c-4ef3-b693-9da9cc603a5a",
+      "name": "Every 2 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "capacity_by_day",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=day=gte.{{ $now.toFormat('yyyy-LL-dd') }}&day=lte.{{ $now.plus({ days: 7 }).toFormat('yyyy-LL-dd') }}"
+      },
+      "id": "e0e7fd37-5267-41f9-a16b-cd35076f040e",
+      "name": "Points booked, next 7 days",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst full = $input.all().map((i) => i.json).filter((d) => d.points >= cap * 0.9);\nreturn [{ json: { full_days: full.map((d) => d.day), any: full.length > 0 } }];"
+      },
+      "id": "0587c96a-178f-43f0-af68-d097c510ee5c",
+      "name": "Find full days",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "80943fc7-054b-4e10-a31e-1cb2ba4b7df3",
+              "leftValue": "={{ $json.any }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ff0c0ec6-1e66-4e8b-be71-aa2941f961e9",
+      "name": "Any day nearly full?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "42540f4d-db68-4abc-90d8-2939d980531f",
+      "name": "Room every day",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "tableId": "blocked_days",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "675e2ac6-5b4a-4e96-abab-4946f50729e9",
+      "name": "Mark days full",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `Kitchen nearly full on ${$(\"Find full days\").first().json.full_days.join(\", \")}. Tia is offering the next free dates.` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "4e048662-7177-4926-8fd2-c551848bca1a",
+      "name": "Tell Temmie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Every 2 hours": {
+      "main": [
+        [
+          {
+            "node": "Points booked, next 7 days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Points booked, next 7 days": {
+      "main": [
+        [
+          {
+            "node": "Find full days",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find full days": {
+      "main": [
+        [
+          {
+            "node": "Any day nearly full?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any day nearly full?": {
+      "main": [
+        [
+          {
+            "node": "Mark days full",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Room every day",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark days full": {
+      "main": [
+        [
+          {
+            "node": "Tell Temmie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "kitchen"
+    }
+  ]
+}

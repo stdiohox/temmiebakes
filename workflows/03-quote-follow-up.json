@@ -1,0 +1,464 @@
+{
+  "name": "03 · Quote follow-up (6h nudge, 24h last call, release slot)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Quote follow-up\nCalled by intake (01) with the order. Waits 6 hours; if the deposit is still unpaid sends a friendly nudge, waits again to 24 hours for a last call, then releases the kitchen slot. Every Wait has a timeout.",
+        "width": 580,
+        "height": 200,
+        "color": 4
+      },
+      "id": "1f43c6c7-ae01-4876-b2e0-e3a956c9d84c",
+      "name": "Note ae31",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "d6c5c717-bcd0-4991-ae81-4bf6cfd23d7a",
+      "name": "Called by intake (01)",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 6,
+        "unit": "hours"
+      },
+      "id": "a4ff8334-1b06-4c6e-b9dc-bdf5e9e68d8e",
+      "name": "Wait 6 hours",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ],
+      "webhookId": "6841ccad-2e85-43db-897c-812bd2c8813b"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=number=eq.{{ $(\"Called by intake (01)\").first().json.number }}"
+      },
+      "id": "fd57cc1b-d501-41ec-9f51-bcef8a824929",
+      "name": "Re-check order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "00521fbb-7dbd-411d-a4d0-3c9c65515cf8",
+              "leftValue": "={{ $json.payment_status !== \"unpaid\" || $json.status === \"cancelled\" }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "777bcf7e-cc90-49e0-a2f4-b7287c00cb1a",
+      "name": "Deposit paid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f6d0a507-2294-4135-8e1f-6559e58bbf7e",
+      "name": "Done: paid or cancelled",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.phone, type: \"text\", text: { body: `Hi ${$json.name.split(\" \")[0]}, just checking you saw your quote for ${$json.number} (₦${$json.total_ngn.toLocaleString()}). Your date is held until tonight: https://temmiebakes.ng/track/${$json.number}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "4454e369-e398-4971-82a2-4893fb2115e7",
+      "name": "Nudge with pay link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "amount": 18,
+        "unit": "hours"
+      },
+      "id": "9c05f62c-ebff-4560-b9ba-3ec64c5a92bc",
+      "name": "Wait until 24 hours",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        60
+      ],
+      "webhookId": "6e3a4367-b4b7-4cce-aa66-195dac8a226f"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=number=eq.{{ $(\"Called by intake (01)\").first().json.number }}"
+      },
+      "id": "b8c62bbe-a8aa-4d93-9890-fe92c5baa7a0",
+      "name": "Re-check order again",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        60
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "c1d9bdfb-8349-4927-a525-788fe19c3bfe",
+              "leftValue": "={{ $json.payment_status !== \"unpaid\" || $json.status === \"cancelled\" }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "171787fc-9155-4d4e-9ffc-283cbea4d4cd",
+      "name": "Paid now?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6e62a978-3803-4e14-aca0-0124a121a15d",
+      "name": "Done: converted after nudge",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "orders",
+        "filterType": "string",
+        "filterString": "=id=eq.{{ $json.id }}",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "4306eb78-1e17-4daa-b53a-3223ff6aa49b",
+      "name": "Release slot: cancel quote",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Re-check order again\").first().json.phone, type: \"text\", text: { body: \"We have released the date for now so other customers can book. Reply here any time and Tia will check availability again.\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "aba93cf7-fdc6-4670-9e9f-7edc59212a68",
+      "name": "Last call message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2160,
+        160
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"quote-follow-up\",\n  title: \"Quote follow-up sequence finished\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 8,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "9a950434-2e8a-498a-ad83-d8a4f1da5205",
+      "name": "Log follow-up",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "Called by intake (01)": {
+      "main": [
+        [
+          {
+            "node": "Wait 6 hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 6 hours": {
+      "main": [
+        [
+          {
+            "node": "Re-check order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-check order": {
+      "main": [
+        [
+          {
+            "node": "Deposit paid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deposit paid?": {
+      "main": [
+        [
+          {
+            "node": "Done: paid or cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nudge with pay link",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nudge with pay link": {
+      "main": [
+        [
+          {
+            "node": "Wait until 24 hours",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait until 24 hours": {
+      "main": [
+        [
+          {
+            "node": "Re-check order again",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Re-check order again": {
+      "main": [
+        [
+          {
+            "node": "Paid now?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paid now?": {
+      "main": [
+        [
+          {
+            "node": "Done: converted after nudge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Release slot: cancel quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Release slot: cancel quote": {
+      "main": [
+        [
+          {
+            "node": "Last call message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last call message": {
+      "main": [
+        [
+          {
+            "node": "Log follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "orders"
+    },
+    {
+      "name": "payments"
+    }
+  ]
+}

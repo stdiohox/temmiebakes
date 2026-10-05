@@ -284,7 +284,7 @@ export interface Outbound {
   id: string;
   channel: OutboundChannel;
   customerId: string;
-  automationId?: string;
+  automationId?: AutomationId;
   body: string;
   scheduledFor: string;
   sentAt?: string;

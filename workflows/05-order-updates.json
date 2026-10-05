@@ -1,0 +1,343 @@
+{
+  "name": "05 · Order status updates on WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Order updates\nFires when the kitchen moves an order (Supabase database webhook on orders.status). Sends a WhatsApp update for baking, ready, out for delivery (with rider and ETA) and delivered, and calls the review request (07) one hour after delivery.",
+        "width": 600,
+        "height": 200,
+        "color": 4
+      },
+      "id": "06ca8fd2-4957-4bf3-bf03-330fd8e26b8a",
+      "name": "Note 90b9",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "e0b5c0ed-7fc7-4955-8af8-025a79011868",
+      "name": "Webhook: orders.status changed",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "a160a316-3c80-447c-9175-f1a523695325"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $json.body.record, old = $json.body.old_record ?? {};\nif (r.status === old.status) return [{ json: { skip: true } }];\nconst first = String(r.customer_name ?? \"\").split(\" \")[0] || \"there\";\nconst text = {\n  baking: `Hi ${first}, your ${r.label} is in the oven now 🎂`,\n  ready: r.fulfilment === \"pickup\" ? `Your ${r.label} is ready for pickup at our Ikeja studio.` : `Your ${r.label} is decorated and boxed. A rider will pick it up soon.`,\n  \"out-for-delivery\": `Your ${r.label} is on its way with ${r.rider_name}. ETA about ${r.eta_mins} minutes.`,\n  delivered: `Delivered! Enjoy every bite, ${first}. We'd love a photo 📸`,\n}[r.status];\nreturn [{ json: { skip: !text, status: r.status, phone: r.phone, text, order_id: r.id } }];"
+      },
+      "id": "42829f85-2289-4c1d-97fc-1be8f8c32e28",
+      "name": "Build update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "531b0c07-cdd4-41ea-9a23-e3ac27047b46",
+              "leftValue": "={{ !$json.skip }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "40bcb737-3971-4fb4-b8a6-10431ac14709",
+      "name": "Customer-facing status?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "935f3412-626e-47d3-8a10-da04128aa220",
+      "name": "Internal status only",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.phone, type: \"text\", text: { body: $json.text } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "39fa8b5a-4e99-4af0-b1ff-ab357e5ec5a7",
+      "name": "WhatsApp update",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "88728bea-3bde-42e8-9f30-23b284ff3ee0",
+              "leftValue": "={{ $(\"Build update\").first().json.status === \"delivered\" }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7813d873-d869-4e20-bd59-9d7ab05deb30",
+      "name": "Delivered?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 1,
+        "unit": "hours"
+      },
+      "id": "1c5cf71a-c5e1-4098-a208-589fcf56d4ea",
+      "name": "Wait 1 hour",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        -160
+      ],
+      "webhookId": "2404a7d6-fa63-4285-a271-294876bfa467"
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": "REPLACE_WITH_07_ID",
+        "options": {
+          "waitForSubWorkflow": false
+        }
+      },
+      "id": "c5f52180-152d-4a70-94ea-c5e33cf74975",
+      "name": "Ask for review (07)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"order-updates\",\n  title: `Customer told: ${$(\"Build update\").first().json.status}`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 2,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "7e56acd9-5a92-45ba-b228-ffbdf53852fe",
+      "name": "Log update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true } }}",
+        "options": {}
+      },
+      "id": "f8e56da7-949b-42f0-b4c2-2e698de2f16a",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        40
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: orders.status changed": {
+      "main": [
+        [
+          {
+            "node": "Build update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build update": {
+      "main": [
+        [
+          {
+            "node": "Customer-facing status?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Customer-facing status?": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Internal status only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp update": {
+      "main": [
+        [
+          {
+            "node": "Delivered?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delivered?": {
+      "main": [
+        [
+          {
+            "node": "Wait 1 hour",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 1 hour": {
+      "main": [
+        [
+          {
+            "node": "Ask for review (07)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log update": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "orders"
+    },
+    {
+      "name": "kitchen"
+    }
+  ]
+}

@@ -1,0 +1,562 @@
+{
+  "name": "04 · Payments: Paystack webhook, balance reminders",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Payments\n**A.** Paystack webhook (signature verified) marks deposit or balance paid and confirms on WhatsApp. Only the webhook changes payment status, never the customer.\n**B.** Every morning, orders due within 48h with a balance get a reminder and pay link.",
+        "width": 600,
+        "height": 220,
+        "color": 4
+      },
+      "id": "d7ced3b1-2433-4313-91a7-0e66d4e78f8c",
+      "name": "Note 8d3c",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "paystack",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "4cefa5d5-12a6-41b0-8315-77a3acc9cf94",
+      "name": "Webhook: Paystack charge.success",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "26bbe82b-8680-4922-b750-437201503b42"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require(\"crypto\");\nconst sig = $json.headers[\"x-paystack-signature\"];\nconst hash = crypto.createHmac(\"sha512\", $vars.PAYSTACK_SECRET).update(JSON.stringify($json.body)).digest(\"hex\");\nif (hash !== sig) return [{ json: { valid: false } }];\nconst d = $json.body.data;\nreturn [{ json: { valid: $json.body.event === \"charge.success\", reference: d.reference, amount_ngn: d.amount / 100, number: d.reference.split(\"-\")[0] + \"-\" + d.reference.split(\"-\")[1], kind: d.reference.endsWith(\"-dep\") ? \"deposit\" : \"balance\" } }];"
+      },
+      "id": "43708b04-5d5b-49d9-bd31-0075ebc91bb0",
+      "name": "Verify signature",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "aef765f4-ee4f-4a82-8380-e1a752a3e58e",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "16443f1a-7617-400b-8c5d-128aee53bf70",
+      "name": "Valid payment?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false } }}",
+        "options": {}
+      },
+      "id": "58867748-c540-4c4b-9a85-8248a25c9ba6",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=number=eq.{{ $json.number }}"
+      },
+      "id": "a8aa355e-6972-4d49-a3d4-1917904f3f58",
+      "name": "Load order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        720,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $(\"Verify signature\").first().json;\nconst paid = Number($json.paid_ngn) + p.amount_ngn;\nreturn [{ json: { id: $json.id, paid_ngn: paid, payment_status: paid >= $json.total_ngn ? \"paid\" : \"deposit\", status: $json.status === \"quoted\" ? \"confirmed\" : $json.status, phone: $json.phone, number: $json.number, balance: Math.max(0, $json.total_ngn - paid) } }];"
+      },
+      "id": "a20f7018-2742-4d45-8f57-6745223b91ec",
+      "name": "Apply payment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "orders",
+        "filterType": "string",
+        "filterString": "=id=eq.{{ $json.id }}",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "1dbf327a-d83b-4a29-9bbb-ebc5d3cdb07b",
+      "name": "Update order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Apply payment\").first().json.phone, type: \"text\", text: { body: `Payment received, thank you! ${$(\"Apply payment\").first().json.number} is confirmed. ${$(\"Apply payment\").first().json.balance ? \"Balance of ₦\" + $(\"Apply payment\").first().json.balance.toLocaleString() + \" is due before dispatch.\" : \"Paid in full.\"} Track it: https://temmiebakes.ng/track/${$(\"Apply payment\").first().json.number}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "63b1fd55-bf7d-46bb-ae79-f0d9791d86bd",
+      "name": "Confirm on WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        -100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true } }}",
+        "options": {}
+      },
+      "id": "42ad2b08-4060-4400-8037-7e4fc2d09a78",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "28bdab41-985e-4341-9d72-3483b8eda9ab",
+      "name": "Daily 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=payment_status=eq.deposit&due_date=lte.{{ $now.plus({ days: 2 }).toFormat('yyyy-LL-dd') }}&due_date=gte.{{ $now.toFormat('yyyy-LL-dd') }}"
+      },
+      "id": "68e32265-fad3-41d5-9d1d-0ef6c9c4a007",
+      "name": "Balances due in 48h",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        360
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "63cff107-ae0a-4046-ad48-eeada4e6405a",
+              "leftValue": "={{ $json.id !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2140ce63-ea0f-4adb-9b25-179e3f9aa796",
+      "name": "Any due?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        360
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "73e02098-7ada-48b2-afca-3872a0bc6b99",
+      "name": "No balances due",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.paystack.co/transaction/initialize",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email || ($json.phone.replace(\"+\", \"\") + \"@wa.temmiebakes.ng\"), amount: ($json.total_ngn - $json.paid_ngn) * 100, reference: $json.number + \"-bal\", currency: \"NGN\", callback_url: \"https://temmiebakes.ng/track/\" + $json.number + \"-bal\".split(\"-dep\")[0] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "0459cc26-4186-4052-bee3-7ccb9ab996e8",
+      "name": "Paystack: balance link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Paystack secret key (Authorization: Bearer)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Balances due in 48h\").item.json.phone, type: \"text\", text: { body: `Hi! Your ${$(\"Balances due in 48h\").item.json.number} is scheduled for ${$(\"Balances due in 48h\").item.json.due_date}. The balance is due before dispatch: ${$json.data.authorization_url}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "833505b2-9de7-48eb-b3c8-3a6e8ba1d482",
+      "name": "Balance reminder",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        300
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"payment-reminders\",\n  title: \"Balance reminder sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 3,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "5b314262-cf08-49e6-87fa-5f34fe712c1b",
+      "name": "Log reminders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook: Paystack charge.success": {
+      "main": [
+        [
+          {
+            "node": "Verify signature",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verify signature": {
+      "main": [
+        [
+          {
+            "node": "Valid payment?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Valid payment?": {
+      "main": [
+        [
+          {
+            "node": "Load order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load order": {
+      "main": [
+        [
+          {
+            "node": "Apply payment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply payment": {
+      "main": [
+        [
+          {
+            "node": "Update order",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update order": {
+      "main": [
+        [
+          {
+            "node": "Confirm on WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confirm on WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 08:00": {
+      "main": [
+        [
+          {
+            "node": "Balances due in 48h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Balances due in 48h": {
+      "main": [
+        [
+          {
+            "node": "Any due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any due?": {
+      "main": [
+        [
+          {
+            "node": "Paystack: balance link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No balances due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paystack: balance link": {
+      "main": [
+        [
+          {
+            "node": "Balance reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Balance reminder": {
+      "main": [
+        [
+          {
+            "node": "Log reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "payments"
+    }
+  ]
+}

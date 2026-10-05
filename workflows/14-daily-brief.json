@@ -1,0 +1,252 @@
+{
+  "name": "14 · Morning brief to Temmie",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Morning brief\n07:00 every day: today's orders and value, balances to collect, chats waiting, low stock and tomorrow's capacity, as one WhatsApp message. Numbers come from the database; Claude only phrases them.",
+        "width": 560,
+        "height": 180,
+        "color": 5
+      },
+      "id": "a68b3065-4469-43c0-a7aa-23165fd5590b",
+      "name": "Note 4928",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * *"
+            }
+          ]
+        }
+      },
+      "id": "0b762f3e-e1a4-4587-91ec-3f7f832e96f3",
+      "name": "Daily 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "daily_brief_view",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=day=eq.{{ $now.toFormat('yyyy-LL-dd') }}"
+      },
+      "id": "8a5e0284-cccf-4373-a7ed-05f665385ce5",
+      "name": "Daily summary view",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 300, temperature: 0.5, system: \"Turn these numbers into a friendly WhatsApp morning brief for a bakery owner, max 80 words, bullet points, no em dashes. Use ONLY the numbers given.\", messages: [{ role: \"user\", content: JSON.stringify($json) }] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "d4d1cc74-149c-4c33-b19a-4e6435de3bcd",
+      "name": "Claude: phrase the brief",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Anthropic API key (x-api-key)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $json.content?.[0]?.text;\nconst d = $(\"Daily summary view\").first().json;\nreturn [{ json: { text: t && !/—|–/.test(t) ? t : `Good morning! Today: ${d.orders_today} orders (₦${d.value_today}). Balances to collect: ₦${d.balances}. Chats waiting: ${d.handoffs}. Low stock: ${d.low_stock}.`, ai_failed: !t } }];"
+      },
+      "id": "98921955-08cc-4563-bccc-266f449989df",
+      "name": "Fallback if AI fails",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: $json.text } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "b71b677a-b97d-405e-bafd-e0d237584365",
+      "name": "Send to Temmie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"daily-report\",\n  title: \"Morning brief sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 20,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "92160793-db5d-4bb1-975f-383ae76a6d53",
+      "name": "Log brief",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "Daily 07:00": {
+      "main": [
+        [
+          {
+            "node": "Daily summary view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily summary view": {
+      "main": [
+        [
+          {
+            "node": "Claude: phrase the brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: phrase the brief": {
+      "main": [
+        [
+          {
+            "node": "Fallback if AI fails",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fallback if AI fails": {
+      "main": [
+        [
+          {
+            "node": "Send to Temmie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send to Temmie": {
+      "main": [
+        [
+          {
+            "node": "Log brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "reporting"
+    }
+  ]
+}

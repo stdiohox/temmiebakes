@@ -1,0 +1,152 @@
+{
+  "name": "00 · Error handler (all workflows)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Error handler\nSet as **errorWorkflow** on every Temmiebakes workflow.\nLogs the failure to Supabase and WhatsApps Temmie the failing node and execution link, so an order never silently drops.",
+        "width": 460,
+        "height": 200,
+        "color": 3
+      },
+      "id": "90deeb93-7a9d-4d07-b27b-bcf04c6aec30",
+      "name": "Note 30e3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        -260
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e9e63ee8-6341-4d9e-9766-4fca2cc4b2e6",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = $json.execution ?? {};\nreturn [{ json: { workflow: $json.workflow?.name, node: e.lastNodeExecuted, message: e.error?.message ?? \"Unknown error\", url: e.url, at: new Date().toISOString() } }];"
+      },
+      "id": "ee1bf4f2-6345-4369-93aa-398bff659c9a",
+      "name": "Format failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "automation_errors",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "a0c38b9e-6017-4963-9239-4ce073f167c8",
+      "name": "Log to automation_errors",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        480,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `Automation failed: ${$json.workflow}\\nNode: ${$json.node}\\n${$json.message}\\n${$json.url}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "9eefbb2a-a949-4d40-a6b8-67a172c2b8c6",
+      "name": "Alert Temmie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        100
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Format failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format failure": {
+      "main": [
+        [
+          {
+            "node": "Log to automation_errors",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Alert Temmie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "ops"
+    }
+  ]
+}

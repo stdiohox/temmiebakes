@@ -1,0 +1,566 @@
+{
+  "name": "07 · Review request & low-rating rescue",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Reviews\nCalled an hour after delivery. Asks for a 1-5 rating on WhatsApp (6h timeout). 4-5 stars: thank you + Google review link. 1-3 stars: Gemini summarises the issue, Temmie is alerted and the customer hears back personally. Never auto-replies to a complaint.",
+        "width": 620,
+        "height": 200,
+        "color": 5
+      },
+      "id": "37c17b8d-1272-4a9b-9026-a9d5a2e0bd73",
+      "name": "Note 6057",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -120,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "f3052b66-c85f-43fc-b1e9-5d9cdbfe5994",
+      "name": "Called by order updates (05)",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "phoneNumberId": "={{ $vars.WA_PHONE_NUMBER_ID }}",
+        "recipientPhoneNumber": "={{ $json.phone }}",
+        "message": "How was your order? Reply with a number from 1 (poor) to 5 (perfect).",
+        "responseType": "freeText",
+        "options": {
+          "limitWaitTime": {
+            "values": {
+              "limitType": "afterTimeInterval",
+              "resumeAmount": 6,
+              "resumeUnit": "hours"
+            }
+          }
+        }
+      },
+      "id": "1b8666de-f316-40f6-a83b-249de007e0b6",
+      "name": "Ask for rating (WhatsApp, wait 6h)",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "webhookId": "f2bfe4bb-cb21-41e0-87b9-92f7475468bc"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = String($json.data?.text ?? \"\");\nconst n = Number((raw.match(/[1-5]/) ?? [])[0]);\nreturn [{ json: { order_id: $(\"Called by order updates (05)\").first().json.order_id, phone: $(\"Called by order updates (05)\").first().json.phone, rating: n || null, comment: raw, answered: Boolean(raw) } }];"
+      },
+      "id": "63434028-4173-4793-bb00-16f9cad2eb4d",
+      "name": "Parse rating",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "0bc30b76-513f-4326-acd7-5950b37be970",
+                    "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
+                    "rightValue": "happy",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "happy"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "99e4af59-fa09-4a4d-bcbf-001010490fce",
+                    "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
+                    "rightValue": "unhappy",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unhappy"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "f4c62c30-7e1a-4c9e-b73b-b2fdb88237f0",
+                    "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
+                    "rightValue": "unclear",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "unclear"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "f8c18e77-3e16-4314-a4df-544791eadfcd",
+                    "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
+                    "rightValue": "none",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "none"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "unknown"
+        }
+      },
+      "id": "00e52701-bfa0-4c5b-ada2-ba629255f627",
+      "name": "Route by rating",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.phone, type: \"text\", text: { body: \"Thank you so much! Would you share it on Google? It helps small Lagos bakers like us: \" + $vars.GOOGLE_REVIEW_URL } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "272e26aa-15a6-4bb9-9e29-94e70866f861",
+      "name": "Thank you + Google link",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        -200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ contents: [{ parts: [{ text: `Summarise this cake customer feedback in one sentence and classify the issue. Return ONLY JSON {\"summary\":string,\"issue\":\"late|damaged|taste|design|wrong-order|other\"}. Output must start with { and end with }.\\nFeedback: ${$json.comment}` }] }], generationConfig: { temperature: 0.1, maxOutputTokens: 256, responseMimeType: \"application/json\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "a1fd0335-79df-4e99-8f82-aca931221a77",
+      "name": "Gemini: summarise complaint",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        0
+      ],
+      "credentials": {
+        "httpQueryAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Gemini API key (?key=)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"summary\",\"issue\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
+      },
+      "id": "02c482c4-639b-4254-9cca-c26126fc1ac1",
+      "name": "Validate summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $vars.OWNER_WHATSAPP, type: \"text\", text: { body: `⚠️ ${$(\"Parse rating\").first().json.rating}★ review: ${$json.ai.summary ?? $(\"Parse rating\").first().json.comment}${$json.needs_review ? \" (AI summary failed, read the original)\" : \"\"}` } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "27b655eb-a1e0-42ff-b92e-17d937182725",
+      "name": "Alert Temmie",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Parse rating\").first().json.phone, type: \"text\", text: { body: \"I am so sorry to hear that. Temmie has your message and will call you today to make it right.\" } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "ca88522c-8ff7-48eb-b699-eed1413ac2ab",
+      "name": "Personal holding reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {},
+      "id": "5d26e1d1-7d72-49c7-9d2c-219aa50fbf43",
+      "name": "Unclear reply: saved, no action",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        200
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c67da024-be04-4455-83b3-a24a83790321",
+      "name": "No reply in 6h",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "reviews",
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "b05c6b00-27d6-4fee-b0fc-3bad69049e2a",
+      "name": "Save review",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        -100
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "690d6eb9-05e4-4f31-b332-df3408224b4d",
+      "name": "Unknown route (flag for review)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        480
+      ]
+    }
+  ],
+  "connections": {
+    "Called by order updates (05)": {
+      "main": [
+        [
+          {
+            "node": "Ask for rating (WhatsApp, wait 6h)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask for rating (WhatsApp, wait 6h)": {
+      "main": [
+        [
+          {
+            "node": "Parse rating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse rating": {
+      "main": [
+        [
+          {
+            "node": "Route by rating",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by rating": {
+      "main": [
+        [
+          {
+            "node": "Thank you + Google link",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Gemini: summarise complaint",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unclear reply: saved, no action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No reply in 6h",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Unknown route (flag for review)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini: summarise complaint": {
+      "main": [
+        [
+          {
+            "node": "Validate summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate summary": {
+      "main": [
+        [
+          {
+            "node": "Alert Temmie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Temmie": {
+      "main": [
+        [
+          {
+            "node": "Personal holding reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Personal holding reply": {
+      "main": [
+        [
+          {
+            "node": "Save review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thank you + Google link": {
+      "main": [
+        [
+          {
+            "node": "Save review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "reviews"
+    }
+  ]
+}

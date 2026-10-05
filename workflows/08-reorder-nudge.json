@@ -1,0 +1,360 @@
+{
+  "name": "08 · Re-order nudges for quiet customers",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 10 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "cd84d42a-97ce-4a32-8f10-e0fcb78fb8d1",
+      "name": "Mondays 10:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "customer_stats",
+        "returnAll": true,
+        "filterType": "string",
+        "filterString": "=days_since_order=gte.45&days_since_order=lte.120&segment=neq.corporate&consent_whatsapp=eq.true"
+      },
+      "id": "624ee098-bf2a-4944-bc9c-f01556dd56af",
+      "name": "Quiet 45-120 days, opted in",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "REPLACE",
+          "name": "REPLACE: Supabase (Temmiebakes)"
+        }
+      },
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "8b3e2765-e51d-4e72-bef7-5384f9069319",
+              "leftValue": "={{ $json.id !== undefined }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7e41d80b-1897-4b28-aab2-962567185323",
+      "name": "Anyone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "00b18f40-2794-47ab-8223-a7c2e8203854",
+      "name": "Nobody to nudge",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        720,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 200, temperature: 0.8, system: \"Write one short, warm WhatsApp message (max 35 words) from Temmiebakes inviting a past customer to order again. Mention their last order by name. No discounts, no em dashes. End with: Reply YES and Tia will sort it.\", messages: [{ role: \"user\", content: \"Name: \" + $json.first_name + \". Last order: \" + $json.last_item + \". New this month: \" + $vars.NEW_THIS_MONTH }] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "f8c0a250-5a85-467e-a9da-82410d1bb9dd",
+      "name": "Claude: personal nudge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: Anthropic API key (x-api-key)"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "const t = $json.content?.[0]?.text?.trim() ?? \"\";\nconst ok = t.length > 10 && t.length < 300 && !/—|–|discount|% off/i.test(t);\nreturn [{ json: { ...$(\"Quiet 45-120 days, opted in\").item.json, text: ok ? t : null, needs_review: !ok } }];"
+      },
+      "id": "e0897603-7fbc-4a1a-933b-d1c63f6be799",
+      "name": "Check message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "96ea89c4-615f-41e4-938a-9b5ab6942d51",
+              "leftValue": "={{ $json.text !== null }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "d6e354b0-a1e9-47f4-b9c1-02898323b77a",
+      "name": "Message OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -60
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ff8864a5-8068-4dfc-936c-ba727d0e6297",
+      "name": "Held for review (bad AI output)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{ $vars.WA_PHONE_NUMBER_ID }}/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": false,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $json.phone, type: \"text\", text: { body: $json.text } }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "d5c3c0b8-d121-44bf-a236-164fb98bc8eb",
+      "name": "Send nudge",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        -140
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE",
+          "name": "REPLACE: WhatsApp Cloud API token"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"reorder-nudge\",\n  title: \"Re-order nudge sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 4,\n  at: new Date().toISOString(),\n} }));"
+      },
+      "id": "35a0f3c1-70a6-40a0-8f86-132c306195c2",
+      "name": "Log nudge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -140
+      ]
+    }
+  ],
+  "connections": {
+    "Mondays 10:00": {
+      "main": [
+        [
+          {
+            "node": "Quiet 45-120 days, opted in",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quiet 45-120 days, opted in": {
+      "main": [
+        [
+          {
+            "node": "Anyone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anyone?": {
+      "main": [
+        [
+          {
+            "node": "Claude: personal nudge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Nobody to nudge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: personal nudge": {
+      "main": [
+        [
+          {
+            "node": "Check message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check message": {
+      "main": [
+        [
+          {
+            "node": "Message OK?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message OK?": {
+      "main": [
+        [
+          {
+            "node": "Send nudge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Held for review (bad AI output)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send nudge": {
+      "main": [
+        [
+          {
+            "node": "Log nudge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Africa/Lagos",
+    "saveManualExecutions": true,
+    "errorWorkflow": "REPLACE_WITH_00_ERROR_HANDLER_ID"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    {
+      "name": "temmiebakes"
+    },
+    {
+      "name": "retention"
+    }
+  ]
+}

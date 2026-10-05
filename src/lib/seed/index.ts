@@ -82,7 +82,7 @@ export function buildSeed(): DemoData {
     message: r.pick(MESSAGES),
   });
 
-  const makeOrder = (c: Customer, due: number, created: number, opts: { forceStatus?: OrderStatus; channel?: Channel; corporate?: boolean } = {}) => {
+  const makeOrder = (c: Customer, due: number, created: number, opts: { forceStatus?: OrderStatus; channel?: Channel; corporate?: boolean; lost?: boolean } = {}) => {
     const post = created >= goLive;
     const items: OrderItem[] = [];
     let occasion: Occasion = r.weighted([["birthday", 62], ["anniversary", 9], ["just-because", 12], ["baby-shower", 5], ["graduation", 5], ["valentine", 2], ["wedding", 1]]);
@@ -144,7 +144,8 @@ export function buildSeed(): DemoData {
     // status by timing
     const hoursToDue = (due - now) / HOUR;
     let status: OrderStatus;
-    if (opts.forceStatus) status = opts.forceStatus;
+    if (opts.lost) status = "cancelled";
+    else if (opts.forceStatus) status = opts.forceStatus;
     else if (hoursToDue < -2) status = r.chance(post ? 0.015 : 0.04) ? "cancelled" : "delivered";
     else if (hoursToDue < 3) status = fulfilment === "delivery" ? r.pick(["out-for-delivery", "ready"] as const) : "ready";
     else if (hoursToDue < 20) status = r.pick(["baking", "decorating"] as const);
@@ -161,9 +162,13 @@ export function buildSeed(): DemoData {
       const t = k <= 2 ? created + k * (post ? 6 : 90) * 60000 : due - (steps.length - 1 - k) * 2.5 * HOUR;
       o.history.push({ at: iso(Math.min(t, now)), status: steps[k], by: k <= 2 ? (o.assistedByAI ? "Tia (AI)" : "Ifeoma") : k >= 6 ? "Dispatch" : "Kitchen" });
     }
-    if (status === "cancelled") o.history.push({ at: iso(created + DAY), status: "cancelled", by: "Ifeoma" });
+    if (opts.lost) {
+      o.history = o.history.slice(0, 2);
+      o.quoteSentAt = iso(created + (post ? 2 * 60000 : r.int(1, 6) * HOUR));
+      o.history.push({ at: iso(created + 2 * DAY), status: "cancelled", by: "Quote expired" });
+    } else if (status === "cancelled") o.history.push({ at: iso(created + DAY), status: "cancelled", by: "Ifeoma" });
     if (status === "delivered") {
-      o.lateMins = r.chance(post ? 0.07 : 0.22) ? r.int(20, 95) : 0;
+      o.lateMins = r.chance(post ? 0.06 : 0.3) ? r.int(20, 95) : 0;
       if (post && r.chance(0.72)) {
         o.reviewRequested = true;
         if (r.chance(0.68)) {
@@ -190,6 +195,9 @@ export function buildSeed(): DemoData {
       const o = makeOrder(c, due, placed, { corporate: c.segment === "corporate" && r.chance(0.7) });
       if (dayKey(due) >= dayKey(now) && pointsBooked(orders, dayKey(due)) + o.ovenPoints > capacity * (dayKey(due) === dayKey(now) ? 0.9 : 0.72)) continue;
       orders.push(o);
+      // enquiries that never paid: slow replies lost far more of these before automation
+      const post = placed >= goLive;
+      if (due < now && r.chance(post ? 0.32 : 0.85)) orders.push(makeOrder(c, due, placed - r.int(1, 30) * HOUR, { lost: true }));
     }
   });
   // a busy, believable next 7 days
