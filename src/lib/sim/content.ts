@@ -47,7 +47,7 @@ const CATEGORY_TAGS: Record<Category, string[]> = {
 const ANGLE_TAGS: Record<ContentAngle, string> = { birthday: "#lagosbirthdays", valentine: "#valentineslagos", corporate: "#lagoscorporate", weekend: "#weekendtreats" };
 
 export function hashtags(p: Product, angle: ContentAngle, v: number) {
-  const base = ["#temmiebakes", "#lagoscakes", "#cakesinlagos", "#ikejabakery"];
+  const base = ["#koretbakes", "#lagoscakes", "#cakesinlagos", "#ikejabakery"];
   const extra = [...CATEGORY_TAGS[p.category], ANGLE_TAGS[angle]];
   const rotated = extra.slice(v % extra.length).concat(extra.slice(0, v % extra.length));
   // 4 brand tags plus 1 or 2 rotating ones: 5 or 6 in total

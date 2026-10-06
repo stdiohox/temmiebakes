@@ -8,8 +8,8 @@
         "height": 200,
         "color": 5
       },
-      "id": "4467307e-7f41-4faf-b1b7-5f43df6cf7a5",
-      "name": "Note 0592",
+      "id": "8549b958-6aa3-4836-bf1b-65e86fd95b4c",
+      "name": "Note 2ac2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "05abb3d9-489b-442a-9088-24927f676d90",
+      "id": "c0c614ce-d792-4fbd-8887-f29bbf329b50",
       "name": "Daily 09:30",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=days_until=eq.14&consent_whatsapp=eq.true"
       },
-      "id": "b69b5470-cfff-43b3-b624-2f7a7bd0c509",
+      "id": "8cded0a9-d3e6-4ed0-905f-d10bf2de6050",
       "name": "Occasions in 14 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -56,7 +56,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -71,7 +71,7 @@
           },
           "conditions": [
             {
-              "id": "8a5fc923-1e61-4ce8-90bc-cde02114aadf",
+              "id": "a4dd08cd-b047-4945-af51-ee65f9ccbe5c",
               "leftValue": "={{ $json.customer_id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -85,7 +85,7 @@
         },
         "options": {}
       },
-      "id": "938bb62f-de11-4142-a7cf-9efe008086d5",
+      "id": "6e5d0bbd-0fa9-49ec-9c43-2c9b1da34f6e",
       "name": "Anyone due?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -96,7 +96,7 @@
     },
     {
       "parameters": {},
-      "id": "8158b981-623e-4e11-b22b-56557074d0ea",
+      "id": "514dd5e8-c084-43d3-8645-63384971909a",
       "name": "No occasions today",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -113,7 +113,7 @@
         "filterType": "string",
         "filterString": "=customer_id=eq.{{ $json.customer_id }}&automation=eq.occasion-reminders&created_at=gte.{{ $now.minus({ days: 300 }).toISO() }}"
       },
-      "id": "270c323d-d952-4b28-95e0-ae812292e3b1",
+      "id": "df528e4a-39a9-4d79-ab89-7a269090f91b",
       "name": "Already reminded this year?",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -124,7 +124,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -139,7 +139,7 @@
           },
           "conditions": [
             {
-              "id": "b14c1eae-eea3-4a12-9233-f07631834bcf",
+              "id": "9b78829b-6382-4daf-9883-47c6dffa32e9",
               "leftValue": "={{ $json.id === undefined }}",
               "rightValue": true,
               "operator": {
@@ -153,7 +153,7 @@
         },
         "options": {}
       },
-      "id": "14cfd4f8-04c1-4595-8c4b-6f3f5a00fdac",
+      "id": "c90cd627-1629-408f-be47-f22ed52bca1a",
       "name": "Not yet reminded?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -164,7 +164,7 @@
     },
     {
       "parameters": {},
-      "id": "3ce65723-0eb5-4d0a-8156-e83ea96f878c",
+      "id": "f0130a86-4aee-4e57-92cc-c3f9c0da4bd0",
       "name": "Skip: already reminded",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -195,7 +195,7 @@
           }
         }
       },
-      "id": "5550341c-34bb-4dd7-b8b6-344dae3bf2f3",
+      "id": "7873ed33-2dc9-4321-98d8-8638af42fa12",
       "name": "Personal reminder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -217,7 +217,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"occasion-reminders\",\n  title: \"Occasion reminder sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 6,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "6172746e-6655-43bb-a309-50f7ba1f09c1",
+      "id": "d55f1d42-5c04-4c6f-8f6f-cc0bed0911f7",
       "name": "Log reminder",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -231,7 +231,7 @@
         "tableId": "outbound",
         "dataToSend": "autoMapInputData"
       },
-      "id": "ce84e6e7-4911-4372-a5d9-1a6a891f9763",
+      "id": "78c85853-ff62-4152-81d7-f8a92aa71b51",
       "name": "Write outbound",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -242,7 +242,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     }
@@ -353,7 +353,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "retention"

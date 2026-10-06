@@ -130,7 +130,7 @@ export default function OrderTrackPage() {
             <div className="mt-3 flex gap-3 text-sm text-ink-2">
               {o.fulfilment === "delivery" ? <MapPin size={18} className="mt-0.5 shrink-0 text-brand" aria-hidden /> : <Storefront size={18} className="mt-0.5 shrink-0 text-brand" aria-hidden />}
               <div>
-                <p className="text-ink">{o.fulfilment === "delivery" ? o.address || zone?.name || "Lagos" : "Temmiebakes studio, Ikeja"}</p>
+                <p className="text-ink">{o.fulfilment === "delivery" ? o.address || zone?.name || "Lagos" : "Koretbakes studio, Ikeja"}</p>
                 <p className="mt-0.5">{o.fulfilment === "delivery" ? `${zone?.name ?? "Lagos"} · about ${zone?.etaMins ?? 45} minutes from the kitchen` : "Open 10am to 6pm, Monday to Saturday"}</p>
                 <p className="mt-2">{dateTime(o.dueAt)}</p>
                 {rider && (o.status === "out-for-delivery" || o.status === "delivered") && <p className="mt-2">Rider: {rider.name}</p>}

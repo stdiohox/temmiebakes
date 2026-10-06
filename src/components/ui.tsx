@@ -284,12 +284,12 @@ export function Logo({ size = 32, withWord = false, light = false }: { size?: nu
     <span className="inline-flex items-center gap-2.5">
       <svg width={size} height={size} viewBox="0 0 40 40" aria-hidden>
         <rect width="40" height="40" rx="12" fill="var(--brand)" />
-        <text x="20" y="27" textAnchor="middle" fontFamily="var(--font-display-face), Georgia, serif" fontStyle="italic" fontWeight="700" fontSize="20" fill="var(--brand-ink)">tb</text>
+        <text x="20" y="27" textAnchor="middle" fontFamily="var(--font-display-face), Georgia, serif" fontStyle="italic" fontWeight="700" fontSize="20" fill="var(--brand-ink)">kb</text>
         <circle cx="30.5" cy="10" r="3" fill="var(--accent-bright)" />
       </svg>
       {withWord && (
         <span className={cx("font-display text-[19px] font-semibold leading-none", light ? "text-white" : "text-ink")}>
-          temmie<span className={cx("italic", light ? "text-accent-bright" : "text-brand")}>bakes</span>
+          koret<span className={cx("italic", light ? "text-accent-bright" : "text-brand")}>bakes</span>
         </span>
       )}
     </span>

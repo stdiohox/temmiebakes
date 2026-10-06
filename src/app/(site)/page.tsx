@@ -83,7 +83,7 @@ function ProofStrip() {
     { value: String(ZONES.length), label: "Lagos delivery areas" },
   ];
   return (
-    <section aria-label="Temmiebakes in numbers" className="border-y border-line bg-surface/60">
+    <section aria-label="Koretbakes in numbers" className="border-y border-line bg-surface/60">
       <div className="mx-auto grid max-w-6xl grid-cols-2 px-4 sm:px-6 md:grid-cols-4">
         {stats.map((s, i) => (
           <Reveal key={s.label} delay={i * 0.06} className={cx("py-7 md:py-9", i % 2 === 1 && "ps-5", i > 0 && "md:border-s md:border-line md:ps-8", i < 2 && "border-b border-line md:border-b-0")}>
@@ -234,7 +234,7 @@ function CorporateAndClasses() {
             <Image src="/img/class-group.jpg" alt="" fill sizes="(min-width: 768px) 40vw, 100vw" className="object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]" />
           </span>
           <span className="flex flex-1 flex-col p-6 sm:p-7">
-            <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-brand">Temmiebakes Academy</span>
+            <span className="text-[12px] font-semibold uppercase tracking-[0.18em] text-brand">Koretbakes Academy</span>
             <span className="mt-2 font-display text-2xl leading-tight text-ink sm:text-3xl">Learn to bake like a pro</span>
             <span className="mt-2 text-sm leading-relaxed text-ink-2">Hands-on classes in Ikeja, from first sponge to running a cake business. Over 200 students trained.</span>
             <span className="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-medium text-brand">
@@ -298,7 +298,7 @@ function InstagramGrid() {
     <section className="mx-auto mt-24 max-w-6xl px-4 sm:mt-32 sm:px-6">
       <Reveal className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <Eyebrow>@temmiebakes</Eyebrow>
+          <Eyebrow>@koretbakes</Eyebrow>
           <h2 className="mt-2 font-display text-3xl text-ink sm:text-[2.6rem]">Fresh from the feed</h2>
         </div>
         <button type="button" onClick={() => openChannel("instagram")} className="inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-bg transition-transform active:scale-[0.98]">

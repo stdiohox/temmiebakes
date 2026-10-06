@@ -247,13 +247,13 @@ export function buildSeed(): DemoData {
   const convs: { cust: number; channel: Conversation["channel"]; handle?: string; status: Conversation["status"]; reason?: string; mins: number; msgs: [Conversation["messages"][number]["from"], string, string[]?][] }[] = [
     { cust: 60, channel: "instagram", status: "ai", mins: 14, msgs: [
       ["user", "Hi dear, how much is the pink drip cake? For my daughter's 7th birthday on Saturday"],
-      ["ai", "Hi! I'm Tia, Temmiebakes' AI assistant. The Pink Drip & Macaron Cake is ₦72,000 for an 8-inch tall cake (serves about 24). Saturday is available. Would you like it delivered, and to which area?", [p("pink-drip-and-macaron-cake")]],
+      ["ai", "Hi! I'm Tia, Koretbakes' AI assistant. The Pink Drip & Macaron Cake is ₦72,000 for an 8-inch tall cake (serves about 24). Saturday is available. Would you like it delivered, and to which area?", [p("pink-drip-and-macaron-cake")]],
       ["user", "Yes deliver to Magodo. Can you write Happy 7th Birthday Ife on it"],
       ["ai", "Of course. Delivery to Magodo is ₦4,000, so your total is ₦76,000. A 50% deposit of ₦38,000 confirms your Saturday slot. Shall I send the payment link?"],
     ] },
     { cust: 64, channel: "whatsapp", status: "ai", mins: 52, msgs: [
       ["user", "Good evening. Abeg how much be 10 inch red velvet cake with fondant? Na for my husband 40th"],
-      ["ai", "Good evening! I'm Tia, Temmiebakes' AI assistant. A 10-inch round red velvet with cream cheese filling and a fondant finish, themed decoration, comes to ₦139,500 and serves about 35. When is the party?"],
+      ["ai", "Good evening! I'm Tia, Koretbakes' AI assistant. A 10-inch round red velvet with cream cheese filling and a fondant finish, themed decoration, comes to ₦139,500 and serves about 35. When is the party?"],
       ["user", "Next week Friday"],
       ["ai", "Next Friday is available. Fondant designs need 4 days' notice, so we're fine. Would you like 'Happy 40th' in gold? I can also add 12 red velvet cupcakes for the guests at ₦30,000."],
     ] },
@@ -368,10 +368,10 @@ export function buildSeed(): DemoData {
         if (due + DAY < now) push({ channel: "whatsapp", customerId: o.customerId, automationId: "review-request", body: `Hi ${first(o.customerId)}, we hope the ${label} was a hit! Could you rate it 1-5 and share a photo for our page?`, scheduledFor: iso(due + DAY), sentAt: iso(due + DAY), status: o.rating ? "replied" : "read", orderId: o.id });
       }
     }
-    if (o.status === "quoted") push({ channel: o.channel === "instagram" ? "instagram" : "whatsapp", customerId: o.customerId, automationId: "quote-follow-up", body: `Hi ${first(o.customerId)}, just checking you saw your quote for the ${label} (₦${o.totalNGN.toLocaleString()}). Your slot is held until tonight. Pay the deposit here: pay.temmiebakes.ng/${o.number}`, scheduledFor: iso(created + 6 * HOUR), sentAt: created + 6 * HOUR < now ? iso(created + 6 * HOUR) : undefined, status: created + 6 * HOUR < now ? "delivered" : "scheduled", orderId: o.id });
+    if (o.status === "quoted") push({ channel: o.channel === "instagram" ? "instagram" : "whatsapp", customerId: o.customerId, automationId: "quote-follow-up", body: `Hi ${first(o.customerId)}, just checking you saw your quote for the ${label} (₦${o.totalNGN.toLocaleString()}). Your slot is held until tonight. Pay the deposit here: pay.koretbakes.ng/${o.number}`, scheduledFor: iso(created + 6 * HOUR), sentAt: created + 6 * HOUR < now ? iso(created + 6 * HOUR) : undefined, status: created + 6 * HOUR < now ? "delivered" : "scheduled", orderId: o.id });
     if (["confirmed", "baking", "decorating"].includes(o.status) && o.paymentStatus === "deposit") {
       const at = new Date(o.dueAt).getTime() - 2 * DAY;
-      push({ channel: "whatsapp", customerId: o.customerId, automationId: "payment-reminders", body: `Hi ${first(o.customerId)}, your ${label} is scheduled for ${new Date(o.dueAt).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}. The balance of ₦${(o.totalNGN - o.paidNGN).toLocaleString()} is due before dispatch: pay.temmiebakes.ng/${o.number}`, scheduledFor: iso(Math.max(at, created + HOUR)), sentAt: at < now ? iso(at) : undefined, status: at < now ? "read" : "scheduled", orderId: o.id });
+      push({ channel: "whatsapp", customerId: o.customerId, automationId: "payment-reminders", body: `Hi ${first(o.customerId)}, your ${label} is scheduled for ${new Date(o.dueAt).toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "short" })}. The balance of ₦${(o.totalNGN - o.paidNGN).toLocaleString()} is due before dispatch: pay.koretbakes.ng/${o.number}`, scheduledFor: iso(Math.max(at, created + HOUR)), sentAt: at < now ? iso(at) : undefined, status: at < now ? "read" : "scheduled", orderId: o.id });
     }
   });
   // occasion reminders that turned into orders (revenue influenced) + upcoming reminders
@@ -413,10 +413,10 @@ export function buildSeed(): DemoData {
 
   // ---------- content ----------
   const content: ContentDraft[] = [
-    { id: "ct-1", kind: "instagram-post", productId: p("pink-drip-and-macaron-cake"), title: "Pink Drip & Macaron Cake", body: "Pink, tall and dripping with white chocolate 💗 Our Pink Drip & Macaron Cake serves 24 and steals every party. 8\" from ₦72,000. DM 'PINK' or tap the link in bio to order.\n\n#temmiebakes #lagoscakes #cakesinlagos #ikejacakes #birthdaycakelagos", status: "approved", createdAt: iso(now - DAY), scheduledFor: iso(now + 6 * HOUR) },
+    { id: "ct-1", kind: "instagram-post", productId: p("pink-drip-and-macaron-cake"), title: "Pink Drip & Macaron Cake", body: "Pink, tall and dripping with white chocolate 💗 Our Pink Drip & Macaron Cake serves 24 and steals every party. 8\" from ₦72,000. DM 'PINK' or tap the link in bio to order.\n\n#koretbakes #lagoscakes #cakesinlagos #ikejacakes #birthdaycakelagos", status: "approved", createdAt: iso(now - DAY), scheduledFor: iso(now + 6 * HOUR) },
     { id: "ct-2", kind: "whatsapp-broadcast", title: "Weekend treats broadcast", body: "Weekend treats are here 🧁 Red velvet cupcakes, Oreo parfait cups and fresh cinnamon rolls. Order by Thursday 6pm for Saturday delivery. Reply MENU for the full list.", status: "draft", createdAt: iso(now - 4 * HOUR) },
     { id: "ct-3", kind: "reel-script", productId: p("chocolate-drip-celebration"), title: "Reel: the perfect drip", body: "0-2s: Close-up of ganache pouring.\n2-5s: Spin the turntable, drips falling.\n5-8s: Add rosettes and gold sprinkles.\n8-10s: Slice reveal.\nCaption: 'Satisfying? Wait for the slice.' CTA: Order your drip cake, link in bio.", status: "draft", createdAt: iso(now - 2 * DAY) },
-    { id: "ct-4", kind: "instagram-post", title: "Academy: new Buttercream Mastery class", body: "Ready to pipe like a pro? Buttercream Mastery is back: 2 days of rosettes, ombre, sharp edges and drips. Ingredients and certificate included. ₦95,000, 12 seats only. DM 'CLASS' to book.\n\n#temmiebakesacademy #bakingclasslagos #learntobake", status: "published", createdAt: iso(now - 8 * DAY) },
+    { id: "ct-4", kind: "instagram-post", title: "Academy: new Buttercream Mastery class", body: "Ready to pipe like a pro? Buttercream Mastery is back: 2 days of rosettes, ombre, sharp edges and drips. Ingredients and certificate included. ₦95,000, 12 seats only. DM 'CLASS' to book.\n\n#koretbakesacademy #bakingclasslagos #learntobake", status: "published", createdAt: iso(now - 8 * DAY) },
   ];
 
   return {

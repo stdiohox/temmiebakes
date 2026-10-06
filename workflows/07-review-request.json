@@ -8,8 +8,8 @@
         "height": 200,
         "color": 5
       },
-      "id": "37c17b8d-1272-4a9b-9026-a9d5a2e0bd73",
-      "name": "Note 6057",
+      "id": "f007b642-d7b4-46f1-adc7-5b4ee958fcd5",
+      "name": "Note c041",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -21,7 +21,7 @@
       "parameters": {
         "inputSource": "passthrough"
       },
-      "id": "f3052b66-c85f-43fc-b1e9-5d9cdbfe5994",
+      "id": "d9f72450-362d-4e93-80d2-364cf908f08b",
       "name": "Called by order updates (05)",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -47,7 +47,7 @@
           }
         }
       },
-      "id": "1b8666de-f316-40f6-a83b-249de007e0b6",
+      "id": "5e19e890-4333-4339-84a0-3be4ba9c5b4d",
       "name": "Ask for rating (WhatsApp, wait 6h)",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
@@ -61,13 +61,13 @@
           "name": "REPLACE: WhatsApp Cloud API token"
         }
       },
-      "webhookId": "f2bfe4bb-cb21-41e0-87b9-92f7475468bc"
+      "webhookId": "0deaa37b-9e8e-46e4-87b3-7d9811d123f1"
     },
     {
       "parameters": {
         "jsCode": "const raw = String($json.data?.text ?? \"\");\nconst n = Number((raw.match(/[1-5]/) ?? [])[0]);\nreturn [{ json: { order_id: $(\"Called by order updates (05)\").first().json.order_id, phone: $(\"Called by order updates (05)\").first().json.phone, rating: n || null, comment: raw, answered: Boolean(raw) } }];"
       },
-      "id": "63434028-4173-4793-bb00-16f9cad2eb4d",
+      "id": "2fcdd3a6-a200-4a77-96af-7c63bb52da72",
       "name": "Parse rating",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -89,7 +89,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "0bc30b76-513f-4326-acd7-5950b37be970",
+                    "id": "f7f8a421-a400-4e8f-a6db-d9fbb1f31960",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "happy",
                     "operator": {
@@ -112,7 +112,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "99e4af59-fa09-4a4d-bcbf-001010490fce",
+                    "id": "811ecea6-b1f6-4c68-9a62-7eb7de3d47e3",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "unhappy",
                     "operator": {
@@ -135,7 +135,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "f4c62c30-7e1a-4c9e-b73b-b2fdb88237f0",
+                    "id": "7c99c155-625d-48e2-bae7-707258eebeea",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "unclear",
                     "operator": {
@@ -158,7 +158,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "f8c18e77-3e16-4314-a4df-544791eadfcd",
+                    "id": "36be44ec-b25a-4057-bff3-8017e6c875f4",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "none",
                     "operator": {
@@ -179,7 +179,7 @@
           "renameFallbackOutput": "unknown"
         }
       },
-      "id": "00e52701-bfa0-4c5b-ada2-ba629255f627",
+      "id": "4cbb36d9-1cf7-4c5b-9871-cf5f0f60f97b",
       "name": "Route by rating",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -210,7 +210,7 @@
           }
         }
       },
-      "id": "272e26aa-15a6-4bb9-9e29-94e70866f861",
+      "id": "511c3d0b-6669-48f1-abad-ac42b1502ded",
       "name": "Thank you + Google link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -250,7 +250,7 @@
           }
         }
       },
-      "id": "a1fd0335-79df-4e99-8f82-aca931221a77",
+      "id": "e3373a60-5ed4-45e0-8fa7-dfb4af3f972a",
       "name": "Gemini: summarise complaint",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -272,7 +272,7 @@
       "parameters": {
         "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"summary\",\"issue\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
       },
-      "id": "02c482c4-639b-4254-9cca-c26126fc1ac1",
+      "id": "548568f1-f5e1-4318-9fe6-73d7c6c7d5a3",
       "name": "Validate summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -303,7 +303,7 @@
           }
         }
       },
-      "id": "27b655eb-a1e0-42ff-b92e-17d937182725",
+      "id": "4c5252d8-3b16-465e-871a-4d498ec3b728",
       "name": "Alert Temmie",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -343,7 +343,7 @@
           }
         }
       },
-      "id": "ca88522c-8ff7-48eb-b699-eed1413ac2ab",
+      "id": "b6598f4d-fae0-4dd1-b381-fe5e990ee501",
       "name": "Personal holding reply",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -363,7 +363,7 @@
     },
     {
       "parameters": {},
-      "id": "5d26e1d1-7d72-49c7-9d2c-219aa50fbf43",
+      "id": "c4c14d67-e15c-457b-a80a-818b04b773aa",
       "name": "Unclear reply: saved, no action",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -374,7 +374,7 @@
     },
     {
       "parameters": {},
-      "id": "c67da024-be04-4455-83b3-a24a83790321",
+      "id": "af81a81a-8adc-4b1d-a746-8165ab784b8c",
       "name": "No reply in 6h",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -388,7 +388,7 @@
         "tableId": "reviews",
         "dataToSend": "autoMapInputData"
       },
-      "id": "b05c6b00-27d6-4fee-b0fc-3bad69049e2a",
+      "id": "eb45effc-27d7-45b5-98d6-e2f711cd5dc3",
       "name": "Save review",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -399,13 +399,13 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
     {
       "parameters": {},
-      "id": "690d6eb9-05e4-4f31-b332-df3408224b4d",
+      "id": "361e8d38-f280-4fea-9d64-2dad3373d6ae",
       "name": "Unknown route (flag for review)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -557,7 +557,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "reviews"

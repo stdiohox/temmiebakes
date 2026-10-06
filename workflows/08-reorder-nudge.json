@@ -12,7 +12,7 @@
           ]
         }
       },
-      "id": "cd84d42a-97ce-4a32-8f10-e0fcb78fb8d1",
+      "id": "70b2f41a-7119-45ac-a723-775ceee63235",
       "name": "Mondays 10:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -29,7 +29,7 @@
         "filterType": "string",
         "filterString": "=days_since_order=gte.45&days_since_order=lte.120&segment=neq.corporate&consent_whatsapp=eq.true"
       },
-      "id": "624ee098-bf2a-4944-bc9c-f01556dd56af",
+      "id": "23f5f816-798a-415b-a547-51a0d09439f7",
       "name": "Quiet 45-120 days, opted in",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -40,7 +40,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -55,7 +55,7 @@
           },
           "conditions": [
             {
-              "id": "8b3e2765-e51d-4e72-bef7-5384f9069319",
+              "id": "0dfe4c9b-3e2f-4b10-a501-215347fa6b99",
               "leftValue": "={{ $json.id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -69,7 +69,7 @@
         },
         "options": {}
       },
-      "id": "7e41d80b-1897-4b28-aab2-962567185323",
+      "id": "144742ce-443f-491d-908b-60f5eba3ba11",
       "name": "Anyone?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -80,7 +80,7 @@
     },
     {
       "parameters": {},
-      "id": "00b18f40-2794-47ab-8223-a7c2e8203854",
+      "id": "6126df14-8208-4bb0-9d81-9e7dcd78aad7",
       "name": "Nobody to nudge",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -106,7 +106,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 200, temperature: 0.8, system: \"Write one short, warm WhatsApp message (max 35 words) from Temmiebakes inviting a past customer to order again. Mention their last order by name. No discounts, no em dashes. End with: Reply YES and Tia will sort it.\", messages: [{ role: \"user\", content: \"Name: \" + $json.first_name + \". Last order: \" + $json.last_item + \". New this month: \" + $vars.NEW_THIS_MONTH }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 200, temperature: 0.8, system: \"Write one short, warm WhatsApp message (max 35 words) from Koretbakes inviting a past customer to order again. Mention their last order by name. No discounts, no em dashes. End with: Reply YES and Tia will sort it.\", messages: [{ role: \"user\", content: \"Name: \" + $json.first_name + \". Last order: \" + $json.last_item + \". New this month: \" + $vars.NEW_THIS_MONTH }] }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -116,7 +116,7 @@
           }
         }
       },
-      "id": "f8c0a250-5a85-467e-a9da-82410d1bb9dd",
+      "id": "e5b11f3f-287f-42e1-bab9-cbb301a4d84a",
       "name": "Claude: personal nudge",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -138,7 +138,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text?.trim() ?? \"\";\nconst ok = t.length > 10 && t.length < 300 && !/—|–|discount|% off/i.test(t);\nreturn [{ json: { ...$(\"Quiet 45-120 days, opted in\").item.json, text: ok ? t : null, needs_review: !ok } }];"
       },
-      "id": "e0897603-7fbc-4a1a-933b-d1c63f6be799",
+      "id": "a3eea893-d34d-4943-88e9-992e3e23fd7f",
       "name": "Check message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -157,7 +157,7 @@
           },
           "conditions": [
             {
-              "id": "96ea89c4-615f-41e4-938a-9b5ab6942d51",
+              "id": "17df9b8f-b3a0-4cc4-b47e-d34419f89e80",
               "leftValue": "={{ $json.text !== null }}",
               "rightValue": true,
               "operator": {
@@ -171,7 +171,7 @@
         },
         "options": {}
       },
-      "id": "d6e354b0-a1e9-47f4-b9c1-02898323b77a",
+      "id": "b28b658a-d6d6-4608-8254-e49ef194f1b5",
       "name": "Message OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -182,7 +182,7 @@
     },
     {
       "parameters": {},
-      "id": "ff8864a5-8068-4dfc-936c-ba727d0e6297",
+      "id": "a1104abe-6fe8-406c-8b5c-e5120e571042",
       "name": "Held for review (bad AI output)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -213,7 +213,7 @@
           }
         }
       },
-      "id": "d5c3c0b8-d121-44bf-a236-164fb98bc8eb",
+      "id": "ae814f1c-4815-4883-8a19-25f19ff81c8a",
       "name": "Send nudge",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -235,7 +235,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"reorder-nudge\",\n  title: \"Re-order nudge sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 4,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "35a0f3c1-70a6-40a0-8f86-132c306195c2",
+      "id": "d9f0b03e-45f7-4219-874f-de5dd22d3d73",
       "name": "Log nudge",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -351,7 +351,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "retention"

@@ -8,8 +8,8 @@
         "height": 200,
         "color": 5
       },
-      "id": "962ae746-8cc2-4d2b-b518-5d44f6a60a74",
-      "name": "Note 63ab",
+      "id": "3b86be83-d258-4174-aa8a-e2ce2a65b47b",
+      "name": "Note 1ef2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "9046242a-fe2d-4f07-b792-e7c3177844c6",
+      "id": "15e53340-c2be-47c5-af72-a269da110afe",
       "name": "Webhook: corporate enquiry",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "fdb3ed75-9748-4140-93cb-918d3736b650"
+      "webhookId": "82a3d2c2-20a1-454d-8bca-ddf7c9700d0d"
     },
     {
       "parameters": {
         "jsCode": "const b = $json.body;\nconst PER_GUEST = { \"breakfast-box\": 7500, \"canape-reception\": 11000, \"dessert-table\": 9000, \"cake-and-cupcakes\": 4500 };\nif (!PER_GUEST[b.package_id]) return [{ json: { ...b, valid: false } }];\nconst guests = Math.max(10, Number(b.guests) || 0);\nconst total = PER_GUEST[b.package_id] * guests + (guests > 100 ? 0 : 15000);\nreturn [{ json: { ...b, guests, per_guest_ngn: PER_GUEST[b.package_id], total_ngn: total, valid: true } }];"
       },
-      "id": "71cb996a-352a-45db-8810-12b96919a19d",
+      "id": "b769791d-175b-476e-ada9-0c27f90923e5",
       "name": "Price package",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "78ca2251-16cf-4b3f-94cb-6ac5edd6cce6",
+              "id": "a1263a35-8ca9-469b-af24-9e4a994dca50",
               "leftValue": "={{ $json.valid }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "f84e106b-54fe-4441-a01f-86177a70b7ea",
+      "id": "300f6e71-e618-48d8-af73-4b4b1009a3cd",
       "name": "Known package?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -86,7 +86,7 @@
         "responseBody": "={{ { ok: false, error: \"unknown package\" } }}",
         "options": {}
       },
-      "id": "1ad73cc1-8bf1-4762-8411-33c40746a89a",
+      "id": "e0dde60c-ddd8-495c-acdf-abccc3e66afe",
       "name": "Respond 422",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -112,7 +112,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 700, temperature: 0.5, system: \"Write a concise catering proposal (under 160 words) from Temmiebakes, Lagos, for the event described. Use ONLY the figures given. British English, no em dashes. Terms: 50% deposit to confirm, balance 48 hours before the event.\", messages: [{ role: \"user\", content: JSON.stringify($json) }] }) }}",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-sonnet-5-5\", max_tokens: 700, temperature: 0.5, system: \"Write a concise catering proposal (under 160 words) from Koretbakes, Lagos, for the event described. Use ONLY the figures given. British English, no em dashes. Terms: 50% deposit to confirm, balance 48 hours before the event.\", messages: [{ role: \"user\", content: JSON.stringify($json) }] }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -122,7 +122,7 @@
           }
         }
       },
-      "id": "add4e9b5-cb64-4787-b754-a33187eeda09",
+      "id": "1c020c9b-d9a4-4cdc-adff-0d04490b9288",
       "name": "Claude: proposal text",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -144,7 +144,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text ?? \"\";\nconst q = $(\"Price package\").first().json;\nconst ok = t.includes(q.total_ngn.toLocaleString(\"en-GB\")) || t.includes(String(q.total_ngn));\nreturn [{ json: { ...q, proposal: t, needs_review: !ok || /—|–/.test(t) } }];"
       },
-      "id": "288e0dec-5746-4eb3-80f7-861776a937dd",
+      "id": "95b3a262-35ef-4e04-83f7-fc41756e2933",
       "name": "Validate proposal",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -158,7 +158,7 @@
         "tableId": "catering_quotes",
         "dataToSend": "autoMapInputData"
       },
-      "id": "140e62ac-77a5-4fb0-a16c-31c14affe3d5",
+      "id": "b018df20-62bf-46db-9da1-6094254aaadd",
       "name": "Save quote",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -169,7 +169,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -183,7 +183,7 @@
           },
           "conditions": [
             {
-              "id": "d57049ed-48dd-49a9-adf5-88638f3862d4",
+              "id": "c646d0af-e30c-4048-9831-441d8ff6288d",
               "leftValue": "={{ $json.needs_review }}",
               "rightValue": true,
               "operator": {
@@ -197,7 +197,7 @@
         },
         "options": {}
       },
-      "id": "8c301778-31e3-42ca-b88a-c7f2be8f556d",
+      "id": "8fb80b3c-6d18-44df-9c99-cde8bee99c26",
       "name": "Needs Temmie's eye?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -228,7 +228,7 @@
           }
         }
       },
-      "id": "4fcf13f5-94c7-498f-9c66-50e6b0c84d2b",
+      "id": "4ddb8e0d-4dc0-44d0-b467-28b899efe5d9",
       "name": "Ask Temmie to check",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -258,7 +258,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ from: \"Temmiebakes <hello@temmiebakes.ng>\", to: [$json.email], subject: \"Your Temmiebakes catering proposal\", text: $json.proposal }) }}",
+        "jsonBody": "={{ JSON.stringify({ from: \"Koretbakes <hello@koretbakes.ng>\", to: [$json.email], subject: \"Your Koretbakes catering proposal\", text: $json.proposal }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -268,7 +268,7 @@
           }
         }
       },
-      "id": "33fa3890-ee88-4f3e-9756-515f62b076f3",
+      "id": "0a10f2b9-37bb-428b-9e0c-7771a4256ed4",
       "name": "Email proposal",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -291,7 +291,7 @@
         "amount": 3,
         "unit": "days"
       },
-      "id": "394d8b79-d92b-495c-96ee-edbd5d0cdaa2",
+      "id": "dff393d2-3eff-47fe-b5d1-cb81faf9df4d",
       "name": "Wait 3 days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -299,7 +299,7 @@
         1920,
         -160
       ],
-      "webhookId": "dee88ab0-02af-4971-b890-c0ba30395aac"
+      "webhookId": "a5d20bcc-30ac-4ab3-8ea6-fc7edc5c655a"
     },
     {
       "parameters": {
@@ -309,7 +309,7 @@
         "filterType": "string",
         "filterString": "=id=eq.{{ $(\"Save quote\").first().json.id }}"
       },
-      "id": "ad451049-9759-48e3-a03e-5dca4d976e0b",
+      "id": "7e9dbf5e-78e8-4210-8741-ef61edf19a90",
       "name": "Quote status",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -320,7 +320,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -335,7 +335,7 @@
           },
           "conditions": [
             {
-              "id": "5cfd87a1-64fa-46c9-93c8-bc5d60925bf8",
+              "id": "58ff70b1-023f-479a-907c-cc7f1cfb3ea2",
               "leftValue": "={{ $json.status === \"sent\" }}",
               "rightValue": true,
               "operator": {
@@ -349,7 +349,7 @@
         },
         "options": {}
       },
-      "id": "9f87804c-45f7-4d37-b299-b45e4b7f672c",
+      "id": "aef48408-1ba0-46bd-bb3f-f9bd516357e9",
       "name": "Still open?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -370,7 +370,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ from: \"Temmiebakes <hello@temmiebakes.ng>\", to: [$json.email], subject: \"Following up on your catering proposal\", text: \"Hello, just checking the proposal reached you. Happy to adjust the menu or numbers.\" }) }}",
+        "jsonBody": "={{ JSON.stringify({ from: \"Koretbakes <hello@koretbakes.ng>\", to: [$json.email], subject: \"Following up on your catering proposal\", text: \"Hello, just checking the proposal reached you. Happy to adjust the menu or numbers.\" }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -380,7 +380,7 @@
           }
         }
       },
-      "id": "d0d28b50-adc6-4e29-88cb-a442175396dc",
+      "id": "0c659cae-db91-42c3-a503-9cfe748d1ff5",
       "name": "Follow-up email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -400,7 +400,7 @@
     },
     {
       "parameters": {},
-      "id": "d941dada-c7c9-4533-9c44-0b4a8614c42a",
+      "id": "0890e2f2-92ac-41b5-aeff-f74fd080a8f6",
       "name": "Answered (accepted or declined)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -567,7 +567,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "corporate"

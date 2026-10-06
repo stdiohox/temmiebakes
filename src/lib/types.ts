@@ -1,4 +1,4 @@
-// Domain model for the Temmiebakes demo (cakes, desserts, corporate catering, baking academy).
+// Domain model for the Koretbakes demo (cakes, desserts, corporate catering, baking academy).
 // Everything is simulated in the browser (Zustand + localStorage); see src/lib/store.ts.
 
 export type Category = "celebration-cakes" | "cupcakes" | "desserts" | "pastries" | "cookies" | "corporate";

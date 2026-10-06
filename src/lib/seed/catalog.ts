@@ -156,7 +156,7 @@ export const ASSISTANT: AssistantSettings = {
   discloseAI: true,
   depositPct: 50,
   rules: [
-    { id: "r1", text: "Say you're Temmiebakes' AI assistant in the first reply", enabled: true },
+    { id: "r1", text: "Say you're Koretbakes' AI assistant in the first reply", enabled: true },
     { id: "r2", text: "Only quote from the price list and cake builder; never promise a discount", enabled: true },
     { id: "r3", text: "Check kitchen capacity before confirming a date", enabled: true },
     { id: "r4", text: "Always mention allergens when asked about ingredients", enabled: true },

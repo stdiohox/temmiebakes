@@ -169,6 +169,6 @@ export function issueCertificate(s: S, enrollmentId: string) {
   e.status = "completed";
   e.certificate = true;
   if (!c.tags.includes("alumni")) c.tags.push("alumni");
-  send(s, c.id, "whatsapp", `Congratulations ${firstName(c.name)}! 🎓 You've completed ${course.title} at Temmiebakes Academy. Your certificate is attached. Tag @temmiebakes when you post your bakes, we love to share our students' work.`, "academy", { status: "delivered" });
+  send(s, c.id, "whatsapp", `Congratulations ${firstName(c.name)}! 🎓 You've completed ${course.title} at Koretbakes Academy. Your certificate is attached. Tag @koretbakes when you post your bakes, we love to share our students' work.`, "academy", { status: "delivered" });
   logEvent(s, { automation: "academy", kind: "action", title: `Certificate issued: ${course.title}`, detail: `${c.name} · congratulations sent on WhatsApp`, customerId: c.id, minutesSaved: 8 });
 }

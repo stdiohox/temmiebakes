@@ -24,7 +24,7 @@ const GEMINI_MODEL = "gemini-2.0-flash";
 const ERROR_WORKFLOW_ID = "REPLACE_WITH_00_ERROR_HANDLER_ID";
 
 const cred = {
-  supabase: { supabaseApi: { id: "REPLACE", name: "REPLACE: Supabase (Temmiebakes)" } },
+  supabase: { supabaseApi: { id: "REPLACE", name: "REPLACE: Supabase (Koretbakes)" } },
   anthropic: { httpHeaderAuth: { id: "REPLACE", name: "REPLACE: Anthropic API key (x-api-key)" } },
   gemini: { httpQueryAuth: { id: "REPLACE", name: "REPLACE: Gemini API key (?key=)" } },
   resend: { httpHeaderAuth: { id: "REPLACE", name: "REPLACE: Resend API (Authorization: Bearer)" } },
@@ -135,7 +135,7 @@ const sendWhatsApp = (name, toExpr, textExpr, pos) =>
 
 const sendEmail = (name, toExpr, subjectExpr, textExpr, pos) =>
   http(name, "POST", "https://api.resend.com/emails",
-    `={{ JSON.stringify({ from: "Temmiebakes <hello@temmiebakes.ng>", to: [${toExpr}], subject: ${subjectExpr}, text: ${textExpr} }) }}`, cred.resend, pos);
+    `={{ JSON.stringify({ from: "Koretbakes <hello@koretbakes.ng>", to: [${toExpr}], subject: ${subjectExpr}, text: ${textExpr} }) }}`, cred.resend, pos);
 
 const sendSms = (name, toExpr, textExpr, pos) =>
   N(name, "n8n-nodes-base.twilio", 1, { from: "={{ $vars.TWILIO_FROM }}", to: toExpr, message: textExpr, options: {} }, pos, { credentials: cred.twilio });
@@ -186,7 +186,7 @@ const sendInstagram = (name, toExpr, textExpr, pos) =>
 
 const paystackLink = (name, emailExpr, koboExpr, refExpr, pos) =>
   http(name, "POST", "https://api.paystack.co/transaction/initialize",
-    `={{ JSON.stringify({ email: ${emailExpr}, amount: ${koboExpr}, reference: ${refExpr}, currency: "NGN", callback_url: "https://temmiebakes.ng/track/" + ${refExpr}.split("-dep")[0] }) }}`, cred.paystack, pos);
+    `={{ JSON.stringify({ email: ${emailExpr}, amount: ${koboExpr}, reference: ${refExpr}, currency: "NGN", callback_url: "https://koretbakes.ng/track/" + ${refExpr}.split("-dep")[0] }) }}`, cred.paystack, pos);
 
 // Same capacity maths as the app (src/lib/sim/pricing.ts): oven points per day, Sundays closed.
 const JS_CAPACITY = `
@@ -200,10 +200,10 @@ return [{ json: { ...$("Price the order").first().json, booked, capacity: cap, f
 // ------------------------------------------------------------------ workflows
 
 const W = {};
-const TAG = "temmiebakes";
+const TAG = "koretbakes";
 
 W["00-error-handler"] = workflow("00 · Error handler (all workflows)", [TAG, "ops"], ({ add, chain }) => {
-  add(sticky("## Error handler\nSet as **errorWorkflow** on every Temmiebakes workflow.\nLogs the failure to Supabase and WhatsApps Temmie the failing node and execution link, so an order never silently drops.", [-80, -260], 460, 200, 3));
+  add(sticky("## Error handler\nSet as **errorWorkflow** on every Koretbakes workflow.\nLogs the failure to Supabase and WhatsApps Temmie the failing node and execution link, so an order never silently drops.", [-80, -260], 460, 200, 3));
   const t = add(N("Error Trigger", "n8n-nodes-base.errorTrigger", 1, {}, [0, 0]));
   const f = add(code("Format failure", `
 const e = $json.execution ?? {};
@@ -263,7 +263,7 @@ return [{ json: { ...$json, ok: false, message: ($json.reason ?? "That date is t
 const n = "TB-" + String(Math.floor(1000 + Math.random() * 9000));
 return [{ json: { ...$json, number: n, status: "quoted", payment_status: "unpaid", paid_ngn: 0, assisted_by_ai: $json.source !== "web" } }];`, [2640, -260]));
   const ins = add(sbCreate("Create order", "orders", [2880, -260]));
-  const link1 = add(paystackLink("Paystack: deposit link", '$json.email || ($json.phone.replace("+", "") + "@wa.temmiebakes.ng")', "$json.deposit_ngn * 100", '$json.number + "-dep"', [3120, -260]));
+  const link1 = add(paystackLink("Paystack: deposit link", '$json.email || ($json.phone.replace("+", "") + "@wa.koretbakes.ng")', "$json.deposit_ngn * 100", '$json.number + "-dep"', [3120, -260]));
   const msg = add(sendWhatsApp("WhatsApp quote with pay link", '$("Order row").first().json.phone', '`Hi ${$("Order row").first().json.name.split(" ")[0]}! Your order ${$("Order row").first().json.number} comes to ₦${$("Order row").first().json.total_ngn.toLocaleString()}. Pay the 50% deposit (₦${$("Order row").first().json.deposit_ngn.toLocaleString()}) to lock your date: ${$json.data.authorization_url}`', [3360, -260]));
   const log = add(logEvent("Log intake event", "order-intake", '`Order ${$("Order row").first().json.number} quoted automatically`', 12, [3600, -260]));
   const logRow = add(sbCreate("Write automation_events", "automation_events", [3840, -260]));
@@ -313,7 +313,7 @@ return [{ json: { ...$json, reply: "Thank you! I'm passing this to Temmie person
   const order = add(execWf("Create order via intake (01)", "REPLACE_WITH_01_ID", [2080, 200]));
   const track = add(sbGet("Look up order", "orders", '=number=eq.{{ $json.draft.order_number }}', [2080, 360]));
   const kb = add(sbGet("Approved knowledge & price book", "kb_entries", "=approved=eq.true", [2080, 520]));
-  const write = add(claude("Claude: write Tia's reply", '"You are Tia, the AI assistant for Temmiebakes, a cake and dessert business in Ikeja, Lagos. Be warm and brief, 1-3 sentences, British English, no em dashes. Say you are an AI in the first reply. Quote ONLY prices from the price book provided. Never promise discounts or same-day orders. If details are missing ask for at most two of: " + $("Merge draft & apply handoff rules").first().json.missing.join(", ")', '"Knowledge: " + JSON.stringify($input.all().map((i) => i.json)) + "\\nDraft: " + JSON.stringify($("Merge draft & apply handoff rules").first().json.draft) + "\\nCustomer: " + $("Merge draft & apply handoff rules").first().json.text', [2340, 440], { temperature: 0.5, maxTokens: 400 }));
+  const write = add(claude("Claude: write Tia's reply", '"You are Tia, the AI assistant for Koretbakes, a cake and dessert business in Ikeja, Lagos. Be warm and brief, 1-3 sentences, British English, no em dashes. Say you are an AI in the first reply. Quote ONLY prices from the price book provided. Never promise discounts or same-day orders. If details are missing ask for at most two of: " + $("Merge draft & apply handoff rules").first().json.missing.join(", ")', '"Knowledge: " + JSON.stringify($input.all().map((i) => i.json)) + "\\nDraft: " + JSON.stringify($("Merge draft & apply handoff rules").first().json.draft) + "\\nCustomer: " + $("Merge draft & apply handoff rules").first().json.text', [2340, 440], { temperature: 0.5, maxTokens: 400 }));
   const guard = add(code("Guardrail check", `
 // Block replies that invent prices or promise discounts; send them to Temmie instead.
 const text = $json.content?.[0]?.text ?? "";
@@ -371,7 +371,7 @@ W["03-quote-follow-up"] = workflow("03 · Quote follow-up (6h nudge, 24h last ca
   const c1 = add(sbGet("Re-check order", "orders", '=number=eq.{{ $("Called by intake (01)").first().json.number }}', [480, 0]));
   const paid1 = add(ifBool("Deposit paid?", '={{ $json.payment_status !== "unpaid" || $json.status === "cancelled" }}', [720, 0]));
   const done1 = add(noop("Done: paid or cancelled", [960, -140]));
-  const nudge = add(sendWhatsApp("Nudge with pay link", "$json.phone", '`Hi ${$json.name.split(" ")[0]}, just checking you saw your quote for ${$json.number} (₦${$json.total_ngn.toLocaleString()}). Your date is held until tonight: https://temmiebakes.ng/track/${$json.number}`', [960, 60]));
+  const nudge = add(sendWhatsApp("Nudge with pay link", "$json.phone", '`Hi ${$json.name.split(" ")[0]}, just checking you saw your quote for ${$json.number} (₦${$json.total_ngn.toLocaleString()}). Your date is held until tonight: https://koretbakes.ng/track/${$json.number}`', [960, 60]));
   const w2 = add(wait("Wait until 24 hours", 18, "hours", [1200, 60]));
   const c2 = add(sbGet("Re-check order again", "orders", '=number=eq.{{ $("Called by intake (01)").first().json.number }}', [1440, 60]));
   const paid2 = add(ifBool("Paid now?", '={{ $json.payment_status !== "unpaid" || $json.status === "cancelled" }}', [1680, 60]));
@@ -406,13 +406,13 @@ const p = $("Verify signature").first().json;
 const paid = Number($json.paid_ngn) + p.amount_ngn;
 return [{ json: { id: $json.id, paid_ngn: paid, payment_status: paid >= $json.total_ngn ? "paid" : "deposit", status: $json.status === "quoted" ? "confirmed" : $json.status, phone: $json.phone, number: $json.number, balance: Math.max(0, $json.total_ngn - paid) } }];`, [960, -100]));
   const upd = add(sbUpdate("Update order", "orders", "{{ $json.id }}", [1200, -100]));
-  const conf = add(sendWhatsApp("Confirm on WhatsApp", '$("Apply payment").first().json.phone', '`Payment received, thank you! ${$("Apply payment").first().json.number} is confirmed. ${$("Apply payment").first().json.balance ? "Balance of ₦" + $("Apply payment").first().json.balance.toLocaleString() + " is due before dispatch." : "Paid in full."} Track it: https://temmiebakes.ng/track/${$("Apply payment").first().json.number}`', [1440, -100]));
+  const conf = add(sendWhatsApp("Confirm on WhatsApp", '$("Apply payment").first().json.phone', '`Payment received, thank you! ${$("Apply payment").first().json.number} is confirmed. ${$("Apply payment").first().json.balance ? "Balance of ₦" + $("Apply payment").first().json.balance.toLocaleString() + " is due before dispatch." : "Paid in full."} Track it: https://koretbakes.ng/track/${$("Apply payment").first().json.number}`', [1440, -100]));
   const ack = add(respond("Respond 200", [1680, -100]));
   const sch = add(schedule("Daily 08:00", { field: "cronExpression", expression: "0 8 * * *" }, [0, 360]));
   const due = add(sbGet("Balances due in 48h", "orders", "=payment_status=eq.deposit&due_date=lte.{{ $now.plus({ days: 2 }).toFormat('yyyy-LL-dd') }}&due_date=gte.{{ $now.toFormat('yyyy-LL-dd') }}", [240, 360]));
   const any = add(ifBool("Any due?", "={{ $json.id !== undefined }}", [480, 360]));
   const none = add(noop("No balances due", [720, 480]));
-  const pl = add(paystackLink("Paystack: balance link", '$json.email || ($json.phone.replace("+", "") + "@wa.temmiebakes.ng")', "($json.total_ngn - $json.paid_ngn) * 100", '$json.number + "-bal"', [720, 300]));
+  const pl = add(paystackLink("Paystack: balance link", '$json.email || ($json.phone.replace("+", "") + "@wa.koretbakes.ng")', "($json.total_ngn - $json.paid_ngn) * 100", '$json.number + "-bal"', [720, 300]));
   const rem = add(sendWhatsApp("Balance reminder", '$("Balances due in 48h").item.json.phone', '`Hi! Your ${$("Balances due in 48h").item.json.number} is scheduled for ${$("Balances due in 48h").item.json.due_date}. The balance is due before dispatch: ${$json.data.authorization_url}`', [960, 300]));
   const log = add(logEvent("Log reminders", "payment-reminders", '"Balance reminder sent"', 3, [1200, 300]));
   chain(wh, verify, ok);
@@ -510,7 +510,7 @@ W["08-reorder-nudge"] = workflow("08 · Re-order nudges for quiet customers", [T
   const q = add(sbGet("Quiet 45-120 days, opted in", "customer_stats", "=days_since_order=gte.45&days_since_order=lte.120&segment=neq.corporate&consent_whatsapp=eq.true", [240, 0]));
   const any = add(ifBool("Anyone?", "={{ $json.id !== undefined }}", [480, 0]));
   const none = add(noop("Nobody to nudge", [720, 140]));
-  const write = add(claude("Claude: personal nudge", '"Write one short, warm WhatsApp message (max 35 words) from Temmiebakes inviting a past customer to order again. Mention their last order by name. No discounts, no em dashes. End with: Reply YES and Tia will sort it."', '"Name: " + $json.first_name + ". Last order: " + $json.last_item + ". New this month: " + $vars.NEW_THIS_MONTH', [720, -60], { temperature: 0.8, maxTokens: 200 }));
+  const write = add(claude("Claude: personal nudge", '"Write one short, warm WhatsApp message (max 35 words) from Koretbakes inviting a past customer to order again. Mention their last order by name. No discounts, no em dashes. End with: Reply YES and Tia will sort it."', '"Name: " + $json.first_name + ". Last order: " + $json.last_item + ". New this month: " + $vars.NEW_THIS_MONTH', [720, -60], { temperature: 0.8, maxTokens: 200 }));
   const guard = add(code("Check message", `
 const t = $json.content?.[0]?.text?.trim() ?? "";
 const ok = t.length > 10 && t.length < 300 && !/—|–|discount|% off/i.test(t);
@@ -560,7 +560,7 @@ return Object.values(by).map((p) => ({ json: { ...p, total_ngn: p.lines.reduce((
   const approve = add(N("Ask Temmie to approve (wait 6h)", "n8n-nodes-base.whatsApp", 1, { operation: "sendAndWait", phoneNumberId: "={{ $vars.WA_PHONE_NUMBER_ID }}", recipientPhoneNumber: "={{ $vars.OWNER_WHATSAPP }}", message: '={{ "Re-order from " + $json.supplier_name + ": " + $json.lines.map((l) => l.qty + l.unit + " " + l.ingredient).join(", ") + ". Approve?" }}', responseType: "approval", options: { limitWaitTime: { values: { limitType: "afterTimeInterval", resumeAmount: 6, resumeUnit: "hours" } } } }, [1200, -60], { credentials: cred.whatsapp, webhookId: randomUUID() }));
   const ok = add(ifBool("Approved?", "={{ $json.data.approved }}", [1440, -60]));
   const no = add(noop("Not approved or timed out (stays draft)", [1680, 80]));
-  const send = add(sendWhatsApp("Send PO to supplier", '$("Save draft PO").item.json.supplier_phone', '"Hello from Temmiebakes. Please deliver: " + $("Save draft PO").item.json.lines.map((l) => l.qty + l.unit + " " + l.ingredient).join(", ") + ". Thank you!"', [1680, -160]));
+  const send = add(sendWhatsApp("Send PO to supplier", '$("Save draft PO").item.json.supplier_phone', '"Hello from Koretbakes. Please deliver: " + $("Save draft PO").item.json.lines.map((l) => l.qty + l.unit + " " + l.ingredient).join(", ") + ". Thank you!"', [1680, -160]));
   const upd = add(sbUpdate("Mark PO sent", "purchase_orders", '{{ $("Save draft PO").item.json.id }}', [1920, -160]));
   chain(sch, q, any);
   link(any, po, 0);
@@ -582,7 +582,7 @@ W["11-academy"] = workflow("11 · Academy: class enquiries, seat booking, remind
 const b = $("Webhook: class booking (website, Tia)").first().json.body;
 return [{ json: { cohort_id: b.cohort_id, customer_id: b.customer_id, phone: b.phone, status: "reserved", deposit_ngn: Math.round($("Load cohort").first().json.price_ngn / 2) } }];`, [720, -60]));
   const ins = add(sbCreate("Reserve seat", "enrollments", [960, -60]));
-  const pay = add(paystackLink("Paystack: class deposit", '$json.phone.replace("+", "") + "@wa.temmiebakes.ng"', "$json.deposit_ngn * 100", '"AC-" + $json.id + "-dep"', [1200, -60]));
+  const pay = add(paystackLink("Paystack: class deposit", '$json.phone.replace("+", "") + "@wa.koretbakes.ng"', "$json.deposit_ngn * 100", '"AC-" + $json.id + "-dep"', [1200, -60]));
   const msg = add(sendWhatsApp("Send seat + pay link", '$("Enrolment row").first().json.phone', '`Your seat is reserved! Pay the 50% deposit to confirm: ${$json.data.authorization_url}. We send the kit list a week before class.`', [1440, -60]));
   const ok = add(respond("Respond 200", [1680, -60]));
   const sch = add(schedule("Daily 09:00", { field: "cronExpression", expression: "0 9 * * *" }, [0, 360]));
@@ -612,7 +612,7 @@ const total = PER_GUEST[b.package_id] * guests + (guests > 100 ? 0 : 15000);
 return [{ json: { ...b, guests, per_guest_ngn: PER_GUEST[b.package_id], total_ngn: total, valid: true } }];`, [240, 0]));
   const ok = add(ifBool("Known package?", "={{ $json.valid }}", [480, 0]));
   const bad = add(respond("Respond 422", [720, 140], '={{ { ok: false, error: "unknown package" } }}'));
-  const write = add(claude("Claude: proposal text", '"Write a concise catering proposal (under 160 words) from Temmiebakes, Lagos, for the event described. Use ONLY the figures given. British English, no em dashes. Terms: 50% deposit to confirm, balance 48 hours before the event."', "JSON.stringify($json)", [720, -60], { temperature: 0.5, maxTokens: 700 }));
+  const write = add(claude("Claude: proposal text", '"Write a concise catering proposal (under 160 words) from Koretbakes, Lagos, for the event described. Use ONLY the figures given. British English, no em dashes. Terms: 50% deposit to confirm, balance 48 hours before the event."', "JSON.stringify($json)", [720, -60], { temperature: 0.5, maxTokens: 700 }));
   const check = add(code("Validate proposal", `
 const t = $json.content?.[0]?.text ?? "";
 const q = $("Price package").first().json;
@@ -621,7 +621,7 @@ return [{ json: { ...q, proposal: t, needs_review: !ok || /—|–/.test(t) } }]
   const save = add(sbCreate("Save quote", "catering_quotes", [1200, -60]));
   const rev = add(ifBool("Needs Temmie's eye?", "={{ $json.needs_review }}", [1440, -60]));
   const hold = add(sendWhatsApp("Ask Temmie to check", "$vars.OWNER_WHATSAPP", '`Corporate quote for ${$json.company} needs a quick check before sending.`', [1680, 80]));
-  const mail = add(sendEmail("Email proposal", "$json.email", '"Your Temmiebakes catering proposal"', "$json.proposal", [1680, -160]));
+  const mail = add(sendEmail("Email proposal", "$json.email", '"Your Koretbakes catering proposal"', "$json.proposal", [1680, -160]));
   const w = add(wait("Wait 3 days", 3, "days", [1920, -160]));
   const chk = add(sbGet("Quote status", "catering_quotes", '=id=eq.{{ $("Save quote").first().json.id }}', [2160, -160]));
   const open = add(ifBool("Still open?", '={{ $json.status === "sent" }}', [2400, -160]));
@@ -641,7 +641,7 @@ return [{ json: { ...q, proposal: t, needs_review: !ok || /—|–/.test(t) } }]
 W["13-ai-content"] = workflow("13 · AI content drafts (Instagram posts, reels, broadcasts)", [TAG, "ai", "marketing"], ({ add, link, chain }) => {
   const sch = add(schedule("Mon & Thu 07:00", { field: "cronExpression", expression: "0 7 * * 1,4" }, [0, 0]));
   const top = add(sbGet("Best sellers & new items", "content_inputs", "=week=eq.{{ $now.toFormat('kkkk-WW') }}", [240, 0]));
-  const write = add(claude("Claude: write drafts", '"You write Instagram captions, reel scripts and WhatsApp broadcasts for Temmiebakes, a Lagos cake and dessert business. Warm, playful, British English, no em dashes. Include price, lead time and the call to action DM CAKE. 5-6 Lagos hashtags. Return ONLY JSON: {\\"drafts\\":[{\\"kind\\":\\"instagram-post|reel-script|whatsapp-broadcast\\",\\"product\\":string,\\"text\\":string}]}"', "JSON.stringify($input.all().map((i) => i.json))", [480, 0], { temperature: 0.8, maxTokens: 1500 }));
+  const write = add(claude("Claude: write drafts", '"You write Instagram captions, reel scripts and WhatsApp broadcasts for Koretbakes, a Lagos cake and dessert business. Warm, playful, British English, no em dashes. Include price, lead time and the call to action DM CAKE. 5-6 Lagos hashtags. Return ONLY JSON: {\\"drafts\\":[{\\"kind\\":\\"instagram-post|reel-script|whatsapp-broadcast\\",\\"product\\":string,\\"text\\":string}]}"', "JSON.stringify($input.all().map((i) => i.json))", [480, 0], { temperature: 0.8, maxTokens: 1500 }));
   const v = add(code("Validate drafts", JS_PARSE_AI("item.json.content?.[0]?.text", ["drafts"]), [720, 0]));
   const ok = add(ifBool("Valid?", "={{ !$json.needs_review }}", [960, 0]));
   const bad = add(sendWhatsApp("Tell Temmie drafts failed", "$vars.OWNER_WHATSAPP", '"This week\'s AI drafts did not come out right, please check the content page."', [1200, 140]));

@@ -115,7 +115,7 @@ function WebChat({ convId, onClose, prefill }: { convId?: string; onClose: () =>
           <span className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-2 border-brand bg-[#5cbf8a]" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-[15px] font-semibold">Tia · Temmiebakes</p>
+          <p className="text-[15px] font-semibold">Tia · Koretbakes</p>
           <p className="text-xs">AI assistant · replies instantly, day or night</p>
         </div>
         <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10" aria-label="Close chat">
@@ -123,7 +123,7 @@ function WebChat({ convId, onClose, prefill }: { convId?: string; onClose: () =>
         </button>
       </div>
       <div className="scrollbar-thin flex-1 overflow-y-auto px-4 py-4">
-        <Thread conv={conv} typing={typing} freshId={freshId} variant="web" onQuick={send} intro={{ text: "Hi! I'm Tia, Temmiebakes' AI assistant. I can quote custom cakes, check delivery dates, take orders, book classes and plan corporate catering.", quick: prefill ? [prefill] : STARTERS }} />
+        <Thread conv={conv} typing={typing} freshId={freshId} variant="web" onQuick={send} intro={{ text: "Hi! I'm Tia, Koretbakes' AI assistant. I can quote custom cakes, check delivery dates, take orders, book classes and plan corporate catering.", quick: prefill ? [prefill] : STARTERS }} />
       </div>
       <div className="border-t border-line p-3">
         <Composer onSend={send} placeholder="Ask about cakes, prices, delivery..." variant="web" autoFocus />
@@ -163,7 +163,7 @@ function PhoneChat({ kind, convId, onClose, prefill }: { kind: "whatsapp" | "ins
           <Logo size={34} />
           <div className="min-w-0 flex-1">
             <p className="flex items-center gap-1 text-[15px] font-semibold leading-tight">
-              {ig ? "temmiebakes" : "Temmiebakes"} <SealCheck size={15} weight="fill" className={ig ? "text-info" : "text-[#b9f5c8]"} />
+              {ig ? "koretbakes" : "Koretbakes"} <SealCheck size={15} weight="fill" className={ig ? "text-info" : "text-[#b9f5c8]"} />
             </p>
             <p className={cx("text-[11.5px]", ig ? "text-ink-3" : "text-white")}>{typing ? (typing === "ai" ? "typing..." : "Temmie is typing...") : ig ? "Dessert Shop · replies instantly" : "Business account · AI assisted"}</p>
           </div>

@@ -35,7 +35,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="grain relative min-h-[100dvh] bg-bg">
       <div className="on-brand no-print flex h-9 items-center justify-center gap-3 bg-brand px-4 text-[12.5px] text-brand-ink">
-        <span className="hidden sm:inline">Interactive demo for Temmiebakes · sample data</span>
+        <span className="hidden sm:inline">Interactive demo for Koretbakes · sample data</span>
         <span className="sm:hidden">Demo · sample data</span>
         <button
           onClick={() => {
@@ -53,7 +53,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
       <header className="no-print sticky top-3 z-40 mx-auto mt-3 w-[calc(100%-24px)] max-w-6xl">
         <nav className="flex h-14 items-center justify-between gap-3 rounded-full border border-line bg-surface/85 pe-1.5 ps-3 shadow-soft backdrop-blur-xl sm:pe-2 sm:ps-4">
-          <Link href="/" className="shrink-0" aria-label="Temmiebakes home">
+          <Link href="/" className="shrink-0" aria-label="Koretbakes home">
             <Logo size={30} withWord />
           </Link>
           <div className="hidden items-center gap-1 lg:flex">
@@ -100,7 +100,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
           <div className="max-w-sm">
             <Logo size={34} withWord />
             <p className="mt-4 text-sm leading-relaxed text-ink-2">Celebration cakes, decadent desserts, corporate breakfasts and baking classes, made in Ikeja and delivered across Lagos.</p>
-            <p className="mt-3 text-xs text-ink-3">Interactive demo built for Temmiebakes. Orders, people and figures are sample data.</p>
+            <p className="mt-3 text-xs text-ink-3">Interactive demo built for Koretbakes. Orders, people and figures are sample data.</p>
           </div>
           <div className="flex flex-col gap-2 text-sm">
             {NAV.map((l) => (
@@ -115,7 +115,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
               <WhatsappLogo size={16} /> Order on WhatsApp
             </button>
             <button onClick={() => window.dispatchEvent(new CustomEvent("open-channel", { detail: { channel: "instagram" } }))} className="inline-flex items-center gap-1.5 text-start hover:text-ink">
-              <InstagramLogo size={16} /> @temmiebakes
+              <InstagramLogo size={16} /> @koretbakes
             </button>
             <Link href="/admin" className="mt-2 text-brand hover:underline">Back office</Link>
           </div>

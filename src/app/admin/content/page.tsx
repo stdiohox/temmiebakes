@@ -27,7 +27,7 @@ export default function ContentPage() {
       <PageHead
         title="AI content studio"
         icon={<Sparkle size={26} weight="fill" className="text-accent" />}
-        sub="Captions, Reel scripts, Stories and broadcasts written in the Temmiebakes voice in seconds. Nothing goes out until you approve it."
+        sub="Captions, Reel scripts, Stories and broadcasts written in the Koretbakes voice in seconds. Nothing goes out until you approve it."
       />
       <Studio />
       <Queue />
@@ -169,7 +169,7 @@ function PostPreview({ kind, image, name, caption, loading, sub }: { kind: Conte
       <header className="flex items-center gap-2.5 px-3 py-2.5">
         <Logo size={28} />
         <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-semibold text-ink">temmiebakes</span>
+          <span className="block text-[13px] font-semibold text-ink">koretbakes</span>
           <span className="block text-[11px] text-ink-3">{kind === "story" ? "Story" : kind === "reel-script" ? "Reel" : "Ikeja, Lagos"}</span>
         </span>
       </header>
@@ -190,7 +190,7 @@ function PostPreview({ kind, image, name, caption, loading, sub }: { kind: Conte
           </div>
         ) : (
           <p className="line-clamp-[10] whitespace-pre-wrap text-[13px] leading-relaxed text-ink">
-            <span className="font-semibold">temmiebakes</span> {caption || <span className="text-ink-3">Caption appears here after you generate.</span>}
+            <span className="font-semibold">koretbakes</span> {caption || <span className="text-ink-3">Caption appears here after you generate.</span>}
           </p>
         )}
       </div>

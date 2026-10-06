@@ -8,8 +8,8 @@
         "height": 220,
         "color": 4
       },
-      "id": "74070852-b313-483e-ac3a-8ad56985a225",
-      "name": "Note 481e",
+      "id": "97497760-ab5b-411c-9328-865eff7d62c1",
+      "name": "Note 314a",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "8846c355-fd54-4123-acad-54afbf0e4a65",
+      "id": "a53b6f7e-4c3d-45e1-994b-75ee60f6765f",
       "name": "Webhook: checkout, cake builder, Tia",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "f111d170-7204-4b6e-889b-c31e3da86002"
+      "webhookId": "e67317b7-d847-4b1f-8a35-85781c60d48a"
     },
     {
       "parameters": {
         "jsCode": "return $input.all().map(({ json: j }) => {\n  const b = j.body ?? {};\n  let phone = String(b.phone ?? \"\").replace(/[^\\d+]/g, \"\");\n  if (/^0\\d{10}$/.test(phone)) phone = \"+234\" + phone.slice(1);\n  return { json: { source: b.source ?? \"web\", name: String(b.name ?? \"\").trim(), phone, instagram: b.instagram ?? null, email: b.email ?? null,\n    items: b.items ?? [], cake: b.cake ?? null, due_date: b.due_date, due_time: b.due_time ?? \"14:00\", fulfilment: b.fulfilment ?? \"delivery\",\n    zone_id: b.zone_id ?? null, address: b.address ?? null, occasion: b.occasion ?? null, message_on_cake: b.message_on_cake ?? null, received_at: new Date().toISOString() } };\n});"
       },
-      "id": "cd6ccc78-195f-4370-b291-06ae033b2460",
+      "id": "7189abdb-4c43-4a1e-b751-0828ec1d185b",
       "name": "Normalise order",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "ea435ee1-534f-49d2-b6e2-583e5f522198",
+              "id": "b722d28c-9129-4017-9ad9-b28010de616c",
               "leftValue": "={{ Boolean($json.phone && $json.due_date && ($json.items.length || $json.cake)) }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "523ddc46-b085-4e3c-b2f2-b56266752631",
+      "id": "fe9d9880-bdf3-48dc-afa0-44862cee4f7f",
       "name": "Has phone, items and date?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -86,7 +86,7 @@
         "responseBody": "={{ { ok: false, error: \"phone, items and due date are required\" } }}",
         "options": {}
       },
-      "id": "66725456-d5a4-4995-a1ca-c2dec3ea0932",
+      "id": "8abc4130-14e8-4169-82b0-65a1b520e92a",
       "name": "Respond 422: missing details",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -103,7 +103,7 @@
         "filterType": "string",
         "filterString": "=or=(phone.eq.{{ $json.phone }},instagram.eq.{{ $json.instagram || \"none\" }})"
       },
-      "id": "9a943a60-072d-45e6-aed6-a0e73f24d60d",
+      "id": "58761730-eec6-43fc-b168-83025167d980",
       "name": "Find customer",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -114,7 +114,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -123,7 +123,7 @@
       "parameters": {
         "jsCode": "const o = $(\"Normalise order\").first().json;\nconst c = $input.all().map((i) => i.json).find((x) => x.id);\nreturn [{ json: { id: c?.id, name: c?.name ?? o.name, phone: o.phone, instagram: c?.instagram ?? o.instagram, zone_id: o.zone_id ?? c?.zone_id, source: c?.source ?? o.source, is_new: !c } }];"
       },
-      "id": "83bf373f-9bb4-40e2-bf0d-517f9f392702",
+      "id": "2eb2f740-9bf3-4bc0-8dd3-f20da3296595",
       "name": "Customer upsert payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -138,7 +138,7 @@
         "tableId": "customers",
         "dataToSend": "autoMapInputData"
       },
-      "id": "e733e4b3-b199-4b56-93af-5c069e118948",
+      "id": "43625856-e58f-4023-bfc3-ad3fc084652f",
       "name": "Upsert customer",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -149,7 +149,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -161,7 +161,7 @@
         "filterType": "string",
         "filterString": "=active=eq.true"
       },
-      "id": "7f0d8bfd-228e-405f-9eb5-5f4999a15150",
+      "id": "50583ffe-09b1-431d-9802-ae8629487283",
       "name": "Load menu, cake rules, zones",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -172,7 +172,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -181,7 +181,7 @@
       "parameters": {
         "jsCode": "// Same rules as the website: size base + tiers + flavour/filling/finish/decoration extras, zone delivery fee\nconst book = Object.fromEntries($input.all().map((i) => [i.json.key, i.json]));\nconst o = $(\"Normalise order\").first().json;\nlet subtotal = 0, oven_points = 0, lead_days = 1;\nfor (const it of o.items) { const p = book[\"product:\" + it.product_id]; if (!p) throw new Error(\"Unknown product \" + it.product_id); subtotal += p.price_ngn * it.qty; oven_points += p.oven_points * it.qty; lead_days = Math.max(lead_days, p.lead_days); }\nif (o.cake) {\n  const c = o.cake; const base = book[\"size:\" + c.size_inches]?.price_ngn;\n  if (!base) throw new Error(\"Unsupported cake size \" + c.size_inches);\n  const tierMult = [0, 1, 1.85, 2.6, 3.3][c.tiers ?? 1];\n  subtotal += Math.round((base * tierMult + (book[\"flavour:\" + c.flavour]?.price_ngn ?? 0) + (book[\"filling:\" + c.filling]?.price_ngn ?? 0) + (book[\"finish:\" + c.finish]?.price_ngn ?? 0) + (book[\"decoration:\" + c.decoration]?.price_ngn ?? 0)) / 500) * 500;\n  oven_points += (c.tiers ?? 1) * 2 + (c.size_inches >= 10 ? 1 : 0); lead_days = Math.max(lead_days, c.tiers > 1 ? 4 : 2);\n}\nconst delivery = o.fulfilment === \"delivery\" ? (book[\"zone:\" + o.zone_id]?.price_ngn ?? null) : 0;\nif (delivery === null) throw new Error(\"Unknown delivery zone \" + o.zone_id);\nconst daysAhead = (new Date(o.due_date) - new Date(new Date().toISOString().slice(0, 10))) / 86400000;\nreturn [{ json: { ...o, customer_id: $(\"Upsert customer\").first().json.id, subtotal_ngn: subtotal, delivery_ngn: delivery, total_ngn: subtotal + delivery, deposit_ngn: Math.ceil((subtotal + delivery) * 0.5 / 100) * 100, oven_points, lead_days, lead_ok: daysAhead >= lead_days } }];"
       },
-      "id": "204bac71-59e7-4e0a-affb-0f1ac0fc5ffc",
+      "id": "60d528b6-dd56-46b8-b158-23b6db324f8e",
       "name": "Price the order",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -198,7 +198,7 @@
         "filterType": "string",
         "filterString": "=due_date=eq.{{ $json.due_date }}&status=not.in.(cancelled,enquiry)"
       },
-      "id": "1df8669c-2c18-46eb-b8dc-9e3506b3bdf7",
+      "id": "dbec2a34-89bd-442a-a3b0-d2aec574fd3f",
       "name": "Orders booked that day",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -209,7 +209,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -218,7 +218,7 @@
       "parameters": {
         "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst booked = $input.all().reduce((s, i) => s + Number(i.json.oven_points ?? 0), 0);\nconst want = Number($(\"Price the order\").first().json.oven_points ?? 1);\nconst day = $(\"Price the order\").first().json.due_date;\nconst sunday = new Date(day + \"T12:00:00Z\").getUTCDay() === 0;\nreturn [{ json: { ...$(\"Price the order\").first().json, booked, capacity: cap, fits: !sunday && booked + want <= cap, reason: sunday ? \"Closed on Sundays\" : booked + want > cap ? \"Kitchen full that day\" : null } }];"
       },
-      "id": "1b1ad240-ccea-4784-9d39-a3ffdf9f1d1f",
+      "id": "3888bb84-a6c7-45b3-ad74-be07aedc9a57",
       "name": "Capacity check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -237,7 +237,7 @@
           },
           "conditions": [
             {
-              "id": "5beaf2af-d3be-4a67-947e-e89cabdb2eef",
+              "id": "dba5aab9-8a37-4aa9-8d46-6ef7cd360c8d",
               "leftValue": "={{ $json.fits && $json.lead_ok }}",
               "rightValue": true,
               "operator": {
@@ -251,7 +251,7 @@
         },
         "options": {}
       },
-      "id": "f15fa3dc-b0f1-4cfd-b22a-cef6c34baf80",
+      "id": "98059617-ad7d-4ec6-893b-db5056b99388",
       "name": "Fits lead time and kitchen?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -264,7 +264,7 @@
       "parameters": {
         "jsCode": "// Offer the earliest day with room instead of refusing\nreturn [{ json: { ...$json, ok: false, message: ($json.reason ?? \"That date is too soon for this order\") + \". The next free date is in the reply.\" } }];"
       },
-      "id": "c7207de5-bd7b-4387-923e-fcc897ccbe06",
+      "id": "ce974324-da36-41b6-b813-6620c5dd27bb",
       "name": "Find next free date",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -279,7 +279,7 @@
         "responseBody": "={{ { ok: false, reason: $json.message } }}",
         "options": {}
       },
-      "id": "b54eb589-7fcc-4fc4-a9ae-c52d4d7333be",
+      "id": "04a4213b-990c-442e-967c-f6712c0bf0bf",
       "name": "Respond: date unavailable",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -292,7 +292,7 @@
       "parameters": {
         "jsCode": "const n = \"TB-\" + String(Math.floor(1000 + Math.random() * 9000));\nreturn [{ json: { ...$json, number: n, status: \"quoted\", payment_status: \"unpaid\", paid_ngn: 0, assisted_by_ai: $json.source !== \"web\" } }];"
       },
-      "id": "3da9df0d-2135-4891-b05c-97678516e7db",
+      "id": "95e4c0c2-c9da-416c-a5dd-649f00165ba0",
       "name": "Order row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -306,7 +306,7 @@
         "tableId": "orders",
         "dataToSend": "autoMapInputData"
       },
-      "id": "6be2993a-cfe2-4987-a825-df35a4922c9a",
+      "id": "e8b57e11-3706-4192-945e-8acb64766da0",
       "name": "Create order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -317,7 +317,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -333,7 +333,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ email: $json.email || ($json.phone.replace(\"+\", \"\") + \"@wa.temmiebakes.ng\"), amount: $json.deposit_ngn * 100, reference: $json.number + \"-dep\", currency: \"NGN\", callback_url: \"https://temmiebakes.ng/track/\" + $json.number + \"-dep\".split(\"-dep\")[0] }) }}",
+        "jsonBody": "={{ JSON.stringify({ email: $json.email || ($json.phone.replace(\"+\", \"\") + \"@wa.koretbakes.ng\"), amount: $json.deposit_ngn * 100, reference: $json.number + \"-dep\", currency: \"NGN\", callback_url: \"https://koretbakes.ng/track/\" + $json.number + \"-dep\".split(\"-dep\")[0] }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -343,7 +343,7 @@
           }
         }
       },
-      "id": "a417998c-cd96-4fba-a6b0-63fe255ee000",
+      "id": "96febc00-233b-459c-95e8-c36d42994e5c",
       "name": "Paystack: deposit link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -383,7 +383,7 @@
           }
         }
       },
-      "id": "b49dc075-60ab-40a3-89a5-852030df0b0e",
+      "id": "05290611-b970-4caa-bd05-b63a35c7c35c",
       "name": "WhatsApp quote with pay link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -405,7 +405,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"order-intake\",\n  title: `Order ${$(\"Order row\").first().json.number} quoted automatically`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 12,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "0f76008e-9854-42b0-be58-be5492a24630",
+      "id": "fd4bb8f4-1664-4da4-95ac-2b1095b9b53e",
       "name": "Log intake event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -419,7 +419,7 @@
         "tableId": "automation_events",
         "dataToSend": "autoMapInputData"
       },
-      "id": "3da62232-c6d9-4194-8dd1-9f6555405b92",
+      "id": "f1af0d3e-0935-4676-8573-b9bc091770e2",
       "name": "Write automation_events",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -430,7 +430,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -442,7 +442,7 @@
           "waitForSubWorkflow": false
         }
       },
-      "id": "d97747cb-f2d6-41e9-ac4c-7d27b8013a6f",
+      "id": "f7477115-8105-4ff0-b699-cd11c7c69c27",
       "name": "Start quote follow-up (03)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
@@ -457,7 +457,7 @@
         "responseBody": "={{ { ok: true, number: $(\"Order row\").first().json.number } }}",
         "options": {}
       },
-      "id": "37768ca5-13f2-443d-bdc0-8e8e1947147a",
+      "id": "e8a27e83-b431-4cd7-b7ff-fba340ade37c",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -705,7 +705,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "orders"

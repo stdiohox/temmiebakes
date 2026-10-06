@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "4d755720-a0ea-4f4f-a06b-9f182e231a67",
+      "id": "75d196a0-c3f3-4bb4-8462-5bd53e694f88",
       "name": "Webhook: class booking (website, Tia)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -16,7 +16,7 @@
         0,
         0
       ],
-      "webhookId": "a0e501db-d1c6-4a97-a062-03b8ed182095"
+      "webhookId": "e3abc76c-f163-458c-9aad-a7e771f17f73"
     },
     {
       "parameters": {
@@ -26,7 +26,7 @@
         "filterType": "string",
         "filterString": "=id=eq.{{ $json.body.cohort_id }}"
       },
-      "id": "a53c4f35-f6fa-4d74-9f1f-476e3abbc649",
+      "id": "9c32dff6-f015-4447-bce0-94ea93534a18",
       "name": "Load cohort",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -37,7 +37,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -52,7 +52,7 @@
           },
           "conditions": [
             {
-              "id": "43f4a1e1-be41-4bf9-af5d-b16566810e29",
+              "id": "bc8744f6-eac1-434b-9275-e954c5255bda",
               "leftValue": "={{ $json.seats_taken < $json.seats }}",
               "rightValue": true,
               "operator": {
@@ -66,7 +66,7 @@
         },
         "options": {}
       },
-      "id": "501c5a10-92ed-4461-907f-84734b9c3682",
+      "id": "c48fa595-d8a6-4b98-b512-64400fd6f399",
       "name": "Seat available?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -79,7 +79,7 @@
       "parameters": {
         "jsCode": "return [{ json: { ...$(\"Webhook: class booking (website, Tia)\").first().json.body, status: \"waitlist\" } }];"
       },
-      "id": "0f3bdec9-f507-4219-9af5-c2f38fd4653d",
+      "id": "f2b6b2e9-59e4-4029-982c-86af0d2d82ef",
       "name": "Waitlist",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -93,7 +93,7 @@
         "tableId": "enrollments",
         "dataToSend": "autoMapInputData"
       },
-      "id": "f07dd021-668a-4280-8390-5f6ae4994d43",
+      "id": "1a736da1-c180-4a11-b88e-dd7836b672a6",
       "name": "Add to waitlist",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -104,7 +104,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -114,7 +114,7 @@
         "responseBody": "={{ { ok: true, waitlist: true } }}",
         "options": {}
       },
-      "id": "e292fa70-9b5c-4a21-8078-1b6869799a23",
+      "id": "c7ef5f21-dd4a-4699-8118-153532311d7a",
       "name": "Respond: waitlisted",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -127,7 +127,7 @@
       "parameters": {
         "jsCode": "const b = $(\"Webhook: class booking (website, Tia)\").first().json.body;\nreturn [{ json: { cohort_id: b.cohort_id, customer_id: b.customer_id, phone: b.phone, status: \"reserved\", deposit_ngn: Math.round($(\"Load cohort\").first().json.price_ngn / 2) } }];"
       },
-      "id": "324ec818-0679-498c-bf80-5f3981e07a7d",
+      "id": "2145700a-7062-482c-a038-7ec5f818d311",
       "name": "Enrolment row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -141,7 +141,7 @@
         "tableId": "enrollments",
         "dataToSend": "autoMapInputData"
       },
-      "id": "f9b3afe3-1474-4f53-808f-e994c73549c4",
+      "id": "cf1f2cdb-430c-42ae-b873-f35d34105a8f",
       "name": "Reserve seat",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -152,7 +152,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -168,7 +168,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ email: $json.phone.replace(\"+\", \"\") + \"@wa.temmiebakes.ng\", amount: $json.deposit_ngn * 100, reference: \"AC-\" + $json.id + \"-dep\", currency: \"NGN\", callback_url: \"https://temmiebakes.ng/track/\" + \"AC-\" + $json.id + \"-dep\".split(\"-dep\")[0] }) }}",
+        "jsonBody": "={{ JSON.stringify({ email: $json.phone.replace(\"+\", \"\") + \"@wa.koretbakes.ng\", amount: $json.deposit_ngn * 100, reference: \"AC-\" + $json.id + \"-dep\", currency: \"NGN\", callback_url: \"https://koretbakes.ng/track/\" + \"AC-\" + $json.id + \"-dep\".split(\"-dep\")[0] }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -178,7 +178,7 @@
           }
         }
       },
-      "id": "28a33792-155d-42ff-9129-8035663dec46",
+      "id": "bf36e44e-3e26-495f-8579-271c295537a0",
       "name": "Paystack: class deposit",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -218,7 +218,7 @@
           }
         }
       },
-      "id": "13b24e34-7303-451d-bc95-0695dd858184",
+      "id": "2f3e90d0-4944-4ff1-844f-df80ff8d2ba9",
       "name": "Send seat + pay link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -242,7 +242,7 @@
         "responseBody": "={{ { ok: true } }}",
         "options": {}
       },
-      "id": "4db02e39-1764-414a-9dfe-754f0c914c2f",
+      "id": "82ec6a2d-d499-42db-8d9f-450bd331c162",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -262,7 +262,7 @@
           ]
         }
       },
-      "id": "6be05104-226a-4420-a8ba-c1d9c6f4f480",
+      "id": "8f0fde5a-76c0-44a5-8ace-a8cadc9c8adf",
       "name": "Daily 09:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -279,7 +279,7 @@
         "filterType": "string",
         "filterString": "=days_until=eq.7"
       },
-      "id": "dac53cf6-7901-4a93-a977-e656b45b89d3",
+      "id": "d7da447c-1461-4e5a-9e9d-4da82a16a625",
       "name": "Classes starting in 7 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -290,7 +290,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -305,7 +305,7 @@
           },
           "conditions": [
             {
-              "id": "b154da2e-56f3-495f-925b-4aa03782061b",
+              "id": "2e4b76a7-422a-4e1a-ac1f-515931132281",
               "leftValue": "={{ $json.id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -319,7 +319,7 @@
         },
         "options": {}
       },
-      "id": "e1403004-1758-4224-a106-21fc1d83fe32",
+      "id": "b7f700e8-f3ed-4a6c-b060-8836358b4d73",
       "name": "Anyone starting?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -330,7 +330,7 @@
     },
     {
       "parameters": {},
-      "id": "1fa1d076-ad85-464e-ab23-b343f9dd2a3f",
+      "id": "fffe276f-ff37-4dc3-9814-092bdf56b044",
       "name": "No classes next week",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -361,7 +361,7 @@
           }
         }
       },
-      "id": "34712e0e-fa38-4cbb-a071-ad479bb28bab",
+      "id": "58add4c4-95b9-4611-a28f-bbf7eafdf6cd",
       "name": "Kit list & directions",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -541,7 +541,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "academy"

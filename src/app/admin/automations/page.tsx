@@ -31,7 +31,7 @@ const RUNNERS: Partial<Record<AutomationId, { label: string; fn: (s: S) => strin
       const now = Date.now();
       const due = s.orders.filter((o) => o.status === "quoted" && now - new Date(o.createdAt).getTime() > 6 * 3600000 && new Date(o.dueAt).getTime() > now && !s.outbound.some((m) => m.orderId === o.id && m.automationId === "quote-follow-up" && now - new Date(m.scheduledFor).getTime() < DAY));
       due.forEach((o) => {
-        const m = send(s, o.customerId, "whatsapp", `Hi ${first(s, o.customerId)}, just checking you saw your quote for the ${orderLabel(o)} (${naira(o.totalNGN)}). Your slot is held until tonight. Pay the deposit here: pay.temmiebakes.ng/${o.number}`, "quote-follow-up");
+        const m = send(s, o.customerId, "whatsapp", `Hi ${first(s, o.customerId)}, just checking you saw your quote for the ${orderLabel(o)} (${naira(o.totalNGN)}). Your slot is held until tonight. Pay the deposit here: pay.koretbakes.ng/${o.number}`, "quote-follow-up");
         if (m) m.orderId = o.id;
       });
       logEvent(s, { automation: "quote-follow-up", kind: "action", title: `${due.length} quote follow-ups sent`, detail: due.length ? `${naira(due.reduce((a, o) => a + o.totalNGN, 0))} in open quotes` : "No quotes waiting", minutesSaved: due.length * 4 });
@@ -44,7 +44,7 @@ const RUNNERS: Partial<Record<AutomationId, { label: string; fn: (s: S) => strin
       const now = Date.now();
       const due = s.orders.filter((o) => o.paymentStatus === "deposit" && new Date(o.dueAt).getTime() > now && new Date(o.dueAt).getTime() - now < 2 * DAY && !s.outbound.some((m) => m.orderId === o.id && m.automationId === "payment-reminders"));
       due.forEach((o) => {
-        const m = send(s, o.customerId, "whatsapp", `Hi ${first(s, o.customerId)}, your ${orderLabel(o)} is scheduled soon. The balance of ${naira(o.totalNGN - o.paidNGN)} is due before dispatch: pay.temmiebakes.ng/${o.number}`, "payment-reminders");
+        const m = send(s, o.customerId, "whatsapp", `Hi ${first(s, o.customerId)}, your ${orderLabel(o)} is scheduled soon. The balance of ${naira(o.totalNGN - o.paidNGN)} is due before dispatch: pay.koretbakes.ng/${o.number}`, "payment-reminders");
         if (m) m.orderId = o.id;
       });
       logEvent(s, { automation: "payment-reminders", kind: "action", title: `${due.length} balance reminders sent`, detail: due.length ? `${naira(due.reduce((a, o) => a + o.totalNGN - o.paidNGN, 0))} to collect` : undefined, minutesSaved: due.length * 3 });

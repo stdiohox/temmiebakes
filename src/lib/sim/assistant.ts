@@ -158,7 +158,7 @@ export function respond(conv: Conversation, text: string, ctx: AssistantCtx): Re
   const d: Draft = { ...conv.draft, cake: conv.draft.cake ? { ...conv.draft.cake } : undefined };
   const extracted: string[] = [];
   const firstAI = !conv.messages.some((m) => m.from === "ai");
-  const intro = firstAI && ctx.settings.discloseAI ? `Hi! I'm ${ctx.settings.name}, Temmiebakes' AI assistant. ` : "";
+  const intro = firstAI && ctx.settings.discloseAI ? `Hi! I'm ${ctx.settings.name}, Koretbakes' AI assistant. ` : "";
   const out = (r: Omit<Reply, "extracted" | "draft">): Reply => ({ ...r, text: intro + r.text, extracted, draft: d });
 
   // ---- slot extraction

@@ -143,7 +143,7 @@ export default function CorporatePage() {
       )}
 
       <Card className="mt-5">
-        <CardHead title="Corporate clients" sub="Companies that order from Temmiebakes" />
+        <CardHead title="Corporate clients" sub="Companies that order from Koretbakes" />
         {corporate.length === 0 ? (
           <Empty title="No corporate clients yet" />
         ) : (
@@ -329,7 +329,7 @@ function QuotePreview({ quoteId, onClose, act }: { quoteId: string | null; onClo
             <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-5">
               <div>
                 <Logo size={36} withWord />
-                <p className="mt-2 text-xs text-ink-3">Ikeja, Lagos · hello@temmiebakes.ng · @temmiebakes</p>
+                <p className="mt-2 text-xs text-ink-3">Ikeja, Lagos · hello@koretbakes.ng · @koretbakes</p>
               </div>
               <div className="text-end text-[13px]">
                 <p className="font-display text-lg font-semibold text-ink">Catering proposal</p>
@@ -388,7 +388,7 @@ function QuotePreview({ quoteId, onClose, act }: { quoteId: string | null; onClo
               <p className="font-semibold text-ink">Terms</p>
               <p>50% to confirm, balance 48h before event. Deposit: <span className="tnum font-semibold text-ink">{naira(Math.round(q.totalNGN / 2))}</span>.</p>
               <p>Final guest numbers are confirmed 72 hours before the event. This quote is valid for 14 days.</p>
-              <p className="mt-3 text-ink-3">Thank you for considering Temmiebakes. We would love to make your event delicious.</p>
+              <p className="mt-3 text-ink-3">Thank you for considering Koretbakes. We would love to make your event delicious.</p>
             </section>
           </article>
         </div>

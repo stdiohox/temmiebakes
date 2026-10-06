@@ -8,8 +8,8 @@
         "height": 180,
         "color": 5
       },
-      "id": "a68b3065-4469-43c0-a7aa-23165fd5590b",
-      "name": "Note 4928",
+      "id": "ba4836d8-7dee-40c0-a806-24bfc5de4a97",
+      "name": "Note 0e91",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "0b762f3e-e1a4-4587-91ec-3f7f832e96f3",
+      "id": "26724cca-df26-4a91-a56f-47b6df683d3a",
       "name": "Daily 07:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=day=eq.{{ $now.toFormat('yyyy-LL-dd') }}"
       },
-      "id": "8a5e0284-cccf-4373-a7ed-05f665385ce5",
+      "id": "0231eaf2-4590-4aa6-8384-1bef273eb99b",
       "name": "Daily summary view",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -56,7 +56,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -88,7 +88,7 @@
           }
         }
       },
-      "id": "d4d1cc74-149c-4c33-b19a-4e6435de3bcd",
+      "id": "25483069-5376-4955-be3b-2c2f2f532724",
       "name": "Claude: phrase the brief",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -110,7 +110,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text;\nconst d = $(\"Daily summary view\").first().json;\nreturn [{ json: { text: t && !/—|–/.test(t) ? t : `Good morning! Today: ${d.orders_today} orders (₦${d.value_today}). Balances to collect: ₦${d.balances}. Chats waiting: ${d.handoffs}. Low stock: ${d.low_stock}.`, ai_failed: !t } }];"
       },
-      "id": "98921955-08cc-4563-bccc-266f449989df",
+      "id": "9665639c-6781-4fe3-86c7-8f95e5609220",
       "name": "Fallback if AI fails",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -141,7 +141,7 @@
           }
         }
       },
-      "id": "b71b677a-b97d-405e-bafd-e0d237584365",
+      "id": "96186fba-edcd-428c-a20e-e87fcb10671e",
       "name": "Send to Temmie",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -163,7 +163,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"daily-report\",\n  title: \"Morning brief sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 20,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "92160793-db5d-4bb1-975f-383ae76a6d53",
+      "id": "46c91eb0-e9b5-40ee-a654-9a89de1c1f31",
       "name": "Log brief",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -243,7 +243,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "reporting"

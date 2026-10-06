@@ -305,7 +305,7 @@ function ProductionTicket({ o, customerName, zoneName }: { o: Order; customerNam
   return (
     <section className="print-page hidden print:block" aria-label="Production ticket">
       <div className="border-b-2 border-ink pb-3">
-        <p className="text-xs uppercase tracking-wider">Temmiebakes production ticket</p>
+        <p className="text-xs uppercase tracking-wider">Koretbakes production ticket</p>
         <h1 className="font-display text-3xl font-semibold">{o.number}</h1>
         <p className="text-sm">
           {customerName} · Due {lagosDateTime(o.dueAt)} · {o.fulfilment === "pickup" ? "Pickup at Ikeja studio" : `Delivery to ${zoneName ?? "Lagos"}`}

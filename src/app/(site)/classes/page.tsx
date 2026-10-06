@@ -22,7 +22,7 @@ export default function ClassesPage() {
     <>
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 pb-12 pt-12 sm:px-6 sm:pt-16 md:grid-cols-[1fr_1.05fr]">
         <div>
-          <Eyebrow>Temmiebakes Academy</Eyebrow>
+          <Eyebrow>Koretbakes Academy</Eyebrow>
           <h1 className="mt-3 font-display text-[2.4rem] leading-[1.05] text-ink sm:text-6xl">
             Learn the cakes <span className="italic text-brand">Lagos orders</span>
           </h1>

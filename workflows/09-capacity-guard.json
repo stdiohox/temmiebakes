@@ -8,8 +8,8 @@
         "height": 180,
         "color": 5
       },
-      "id": "3012a6b2-e808-44bd-ba1d-b09364996947",
-      "name": "Note 9cb0",
+      "id": "369d4479-bb75-4b5f-919b-afe56d0fde79",
+      "name": "Note 8588",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "b25724fa-979c-4ef3-b693-9da9cc603a5a",
+      "id": "88584fef-ed5b-44df-94ea-f5b3acae51a7",
       "name": "Every 2 hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=day=gte.{{ $now.toFormat('yyyy-LL-dd') }}&day=lte.{{ $now.plus({ days: 7 }).toFormat('yyyy-LL-dd') }}"
       },
-      "id": "e0e7fd37-5267-41f9-a16b-cd35076f040e",
+      "id": "e41160fb-34c6-4b8a-a9bc-f0173197a78d",
       "name": "Points booked, next 7 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -56,7 +56,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       },
       "alwaysOutputData": true
@@ -65,7 +65,7 @@
       "parameters": {
         "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst full = $input.all().map((i) => i.json).filter((d) => d.points >= cap * 0.9);\nreturn [{ json: { full_days: full.map((d) => d.day), any: full.length > 0 } }];"
       },
-      "id": "0587c96a-178f-43f0-af68-d097c510ee5c",
+      "id": "87cf79f4-55ef-4432-afdf-c45477ab28c2",
       "name": "Find full days",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -84,7 +84,7 @@
           },
           "conditions": [
             {
-              "id": "80943fc7-054b-4e10-a31e-1cb2ba4b7df3",
+              "id": "83be25d2-a26d-4805-8dcf-3cc75c0a5c24",
               "leftValue": "={{ $json.any }}",
               "rightValue": true,
               "operator": {
@@ -98,7 +98,7 @@
         },
         "options": {}
       },
-      "id": "ff0c0ec6-1e66-4e8b-be71-aa2941f961e9",
+      "id": "3af9f0ef-efc2-42ef-ae32-366b4321d20d",
       "name": "Any day nearly full?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -109,7 +109,7 @@
     },
     {
       "parameters": {},
-      "id": "42540f4d-db68-4abc-90d8-2939d980531f",
+      "id": "3d7960e5-223a-4fce-9b0f-4d28324956b7",
       "name": "Room every day",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -124,7 +124,7 @@
         "tableId": "blocked_days",
         "dataToSend": "autoMapInputData"
       },
-      "id": "675e2ac6-5b4a-4e96-abab-4946f50729e9",
+      "id": "aee30478-94c2-4c30-8b6f-b7ecbbee5821",
       "name": "Mark days full",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -135,7 +135,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -161,7 +161,7 @@
           }
         }
       },
-      "id": "4e048662-7177-4926-8fd2-c551848bca1a",
+      "id": "3a3e6416-a463-4a1b-9a02-540171686673",
       "name": "Tell Temmie",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -257,7 +257,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "kitchen"

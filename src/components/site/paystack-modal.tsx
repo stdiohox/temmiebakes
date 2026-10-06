@@ -33,7 +33,7 @@ export function PaystackModal({ open, onClose, amountNGN, email, label, onPaid }
     <Modal open={open} onClose={close} title={<span className="inline-flex items-center gap-2"><LockSimple size={16} aria-hidden /> Paystack checkout (demo)</span>}>
       <div className="flex items-start justify-between gap-4 rounded-2xl bg-surface-2 p-4">
         <div className="min-w-0">
-          <p className="text-[13px] text-ink-3">{email || "customer@temmiebakes.ng"}</p>
+          <p className="text-[13px] text-ink-3">{email || "customer@koretbakes.ng"}</p>
           <p className="mt-1 text-sm text-ink-2">{label}</p>
         </div>
         <p className="tnum shrink-0 font-display text-2xl text-ink">{naira(amountNGN)}</p>
@@ -70,7 +70,7 @@ export function PaystackModal({ open, onClose, amountNGN, email, label, onPaid }
               <div className="mt-4 rounded-2xl border border-line p-4">
                 <p className="text-[13px] text-ink-3">Transfer exactly {naira(amountNGN)} to</p>
                 <p className="tnum mt-2 font-display text-2xl tracking-wide text-ink">9920 418 337</p>
-                <p className="mt-1 text-sm text-ink-2">Wema Bank · Paystack-Temmiebakes</p>
+                <p className="mt-1 text-sm text-ink-2">Wema Bank · Paystack-Koretbakes</p>
                 <p className="mt-3 text-xs text-ink-3">Account expires in 30 minutes. Confirmation is automatic.</p>
               </div>
             )}

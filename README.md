@@ -1,6 +1,6 @@
-# Temmiebakes · interactive demo
+# Koretbakes · interactive demo
 
-A clickable demo of an ordering, kitchen and automation platform for Temmiebakes, a cake and dessert business in Ikeja, Lagos. It covers:
+A clickable demo of an ordering, kitchen and automation platform for Koretbakes, a cake and dessert business in Ikeja, Lagos. It covers:
 
 - a storefront with a live-priced cake builder and deposit checkout
 - "Tia", a 24/7 order assistant on Instagram, WhatsApp and the website

@@ -8,8 +8,8 @@ const body = Figtree({ variable: "--font-body", subsets: ["latin"] });
 const mono = JetBrains_Mono({ variable: "--font-mono-face", subsets: ["latin"], weight: ["400", "500"], preload: false });
 
 export const metadata: Metadata = {
-  title: { default: "Temmiebakes · Cakes & desserts in Lagos", template: "%s · Temmiebakes" },
-  description: "Celebration cakes, desserts, corporate breakfasts and baking classes in Lagos. Interactive demo of the Temmiebakes ordering, kitchen and automation platform.",
+  title: { default: "Koretbakes · Cakes & desserts in Lagos", template: "%s · Koretbakes" },
+  description: "Celebration cakes, desserts, corporate breakfasts and baking classes in Lagos. Interactive demo of the Koretbakes ordering, kitchen and automation platform.",
   robots: { index: false, follow: false },
 };
 

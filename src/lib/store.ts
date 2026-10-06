@@ -81,7 +81,7 @@ export const useDemo = create<DemoStore>()(
       },
     })),
     {
-      name: "temmiebakes-demo",
+      name: "koretbakes-demo",
       version: 1,
       storage: createJSONStorage(() => debouncedLocalStorage),
       skipHydration: true,

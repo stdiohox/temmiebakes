@@ -160,8 +160,8 @@ export function createOrder(s: S, input: OrderInput) {
   const left = capacityLeft(s, input.dueAt);
   logEvent(s, { automation: "capacity-guard", kind: left < 3 ? "alert" : "action", title: `Kitchen capacity checked: ${Math.max(0, left)} oven points left that day`, detail: left < 3 ? "Day is nearly full; Tia will offer the next free date to new customers" : undefined, orderId: o.id, minutesSaved: 3 });
   const channel: OutboundChannel = input.channel === "instagram" ? "instagram" : "whatsapp";
-  send(s, c.id, channel, `Hi ${firstName(c)}, here's your quote for ${orderLabel(o)}: ${naira(total)}${deliveryFee ? ` incl. ${naira(deliveryFee)} delivery` : ""}. A ${s.assistant.depositPct}% deposit of ${naira(o.depositNGN)} books your slot: pay.temmiebakes.ng/${o.number}`, "order-intake", { orderId: o.id });
-  send(s, c.id, channel, `Hi ${firstName(c)}, just checking you saw your quote for the ${orderLabel(o)} (${naira(total)}). Your slot is held until tonight: pay.temmiebakes.ng/${o.number}`, "quote-follow-up", { orderId: o.id, at: Date.now() + 6 * HOUR });
+  send(s, c.id, channel, `Hi ${firstName(c)}, here's your quote for ${orderLabel(o)}: ${naira(total)}${deliveryFee ? ` incl. ${naira(deliveryFee)} delivery` : ""}. A ${s.assistant.depositPct}% deposit of ${naira(o.depositNGN)} books your slot: pay.koretbakes.ng/${o.number}`, "order-intake", { orderId: o.id });
+  send(s, c.id, channel, `Hi ${firstName(c)}, just checking you saw your quote for the ${orderLabel(o)} (${naira(total)}). Your slot is held until tonight: pay.koretbakes.ng/${o.number}`, "quote-follow-up", { orderId: o.id, at: Date.now() + 6 * HOUR });
   logEvent(s, { automation: "quote-follow-up", kind: "action", title: `Quote sent; follow-up scheduled in 6 hours`, detail: `${o.number} · ${naira(total)}`, customerId: c.id, orderId: o.id, minutesSaved: 5 });
   return o;
 }
@@ -181,7 +181,7 @@ export function pay(s: S, orderId: string, kind: "deposit" | "balance" | "full")
   logEvent(s, { automation: "payment-reminders", kind: "action", title: `${kind === "deposit" ? "Deposit" : "Payment"} received for ${o.number}`, detail: `${naira(amount)} via Paystack · receipt sent`, customerId: c.id, orderId: o.id, minutesSaved: 5, revenueNGN: amount });
   if (o.paymentStatus === "deposit") {
     const at = new Date(o.dueAt).getTime() - 2 * DAY;
-    send(s, c.id, "whatsapp", `Hi ${firstName(c)}, your ${orderLabel(o)} is coming up. The balance of ${naira(o.totalNGN - o.paidNGN)} is due before dispatch: pay.temmiebakes.ng/${o.number}`, "payment-reminders", { orderId: o.id, at: Math.max(at, Date.now() + HOUR) });
+    send(s, c.id, "whatsapp", `Hi ${firstName(c)}, your ${orderLabel(o)} is coming up. The balance of ${naira(o.totalNGN - o.paidNGN)} is due before dispatch: pay.koretbakes.ng/${o.number}`, "payment-reminders", { orderId: o.id, at: Math.max(at, Date.now() + HOUR) });
   }
 }
 
@@ -332,7 +332,7 @@ export function setQuoteStatus(s: S, quoteId: string, status: "sent" | "accepted
   q.status = status;
   if (status === "sent") {
     q.sentAt = nowIso();
-    send(s, q.customerId, "email", `Hello, please find attached quote ${q.number} for your ${q.event} (${q.guests} guests, ${naira(q.totalNGN)}). We'll check in on Thursday. Temmiebakes`, "corporate");
+    send(s, q.customerId, "email", `Hello, please find attached quote ${q.number} for your ${q.event} (${q.guests} guests, ${naira(q.totalNGN)}). We'll check in on Thursday. Koretbakes`, "corporate");
     logEvent(s, { automation: "corporate", kind: "action", title: `Quote ${q.number} emailed to ${q.company}`, detail: "PDF quote + follow-up in 2 days", customerId: q.customerId, minutesSaved: 10 });
   }
   if (status === "accepted") {

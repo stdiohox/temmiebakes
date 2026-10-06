@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Error handler\nSet as **errorWorkflow** on every Temmiebakes workflow.\nLogs the failure to Supabase and WhatsApps Temmie the failing node and execution link, so an order never silently drops.",
+        "content": "## Error handler\nSet as **errorWorkflow** on every Koretbakes workflow.\nLogs the failure to Supabase and WhatsApps Temmie the failing node and execution link, so an order never silently drops.",
         "width": 460,
         "height": 200,
         "color": 3
       },
-      "id": "90deeb93-7a9d-4d07-b27b-bcf04c6aec30",
-      "name": "Note 30e3",
+      "id": "9fc2c960-5af6-40d6-86c5-c1081d4cdb8b",
+      "name": "Note 9100",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -19,7 +19,7 @@
     },
     {
       "parameters": {},
-      "id": "e9e63ee8-6341-4d9e-9766-4fca2cc4b2e6",
+      "id": "f9d3906c-1df9-438b-ba70-b9ea483e1c76",
       "name": "Error Trigger",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -32,7 +32,7 @@
       "parameters": {
         "jsCode": "const e = $json.execution ?? {};\nreturn [{ json: { workflow: $json.workflow?.name, node: e.lastNodeExecuted, message: e.error?.message ?? \"Unknown error\", url: e.url, at: new Date().toISOString() } }];"
       },
-      "id": "ee1bf4f2-6345-4369-93aa-398bff659c9a",
+      "id": "d206ec5c-d21a-4d71-a574-fd8df0aa9456",
       "name": "Format failure",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -46,7 +46,7 @@
         "tableId": "automation_errors",
         "dataToSend": "autoMapInputData"
       },
-      "id": "a0c38b9e-6017-4963-9239-4ce073f167c8",
+      "id": "df646c92-4820-42de-b759-4810b564ff51",
       "name": "Log to automation_errors",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -57,7 +57,7 @@
       "credentials": {
         "supabaseApi": {
           "id": "REPLACE",
-          "name": "REPLACE: Supabase (Temmiebakes)"
+          "name": "REPLACE: Supabase (Koretbakes)"
         }
       }
     },
@@ -83,7 +83,7 @@
           }
         }
       },
-      "id": "9eefbb2a-a949-4d40-a6b8-67a172c2b8c6",
+      "id": "860d6456-852f-4131-843c-97c84d92a0ac",
       "name": "Alert Temmie",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -143,7 +143,7 @@
   },
   "tags": [
     {
-      "name": "temmiebakes"
+      "name": "koretbakes"
     },
     {
       "name": "ops"
