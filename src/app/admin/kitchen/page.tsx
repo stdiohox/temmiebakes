@@ -247,7 +247,7 @@ export default function KitchenPage() {
               {needRows.length === 0 ? (
                 <p className="text-[13px] text-ink-3">Everything for this day is already baking or done.</p>
               ) : (
-                <div className="scrollbar-thin overflow-x-auto">
+                <div className="relative scrollbar-thin overflow-x-auto">
                   <table className="w-full min-w-[300px] text-[13px]">
                     <thead>
                       <tr className="text-left text-xs text-ink-3">

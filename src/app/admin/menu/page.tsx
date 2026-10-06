@@ -93,7 +93,7 @@ function Products() {
             )}
           </Field>
         </div>
-        <div className="mt-4 overflow-x-auto">
+        <div className="relative mt-4 overflow-x-auto">
           <table className="w-full min-w-[980px] text-[13px]">
             <thead>
               <tr className="border-y border-line text-xs text-ink-3">

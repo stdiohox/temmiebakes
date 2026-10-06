@@ -105,7 +105,7 @@ export default function AcademyPage() {
 
       <Card className="mt-5">
         <CardHead title="All cohorts" sub="Newest first" />
-        <div className="mt-3 overflow-x-auto">
+        <div className="relative mt-3 overflow-x-auto">
           <table className="w-full min-w-[640px] text-[13px]">
             <thead>
               <tr className="border-y border-line text-xs text-ink-3">

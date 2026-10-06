@@ -13,6 +13,7 @@
   --ink-3: #6e586a;
   --line: #eedce3;
   --line-strong: #dcc5cf;
+  --control-border: #8d7285;
   --brand: #a3174d;
   --brand-ink: #fff7fa;
   --brand-2: #8a1240;
@@ -49,6 +50,8 @@
     --ink-3: #b69dab;
     --line: #3a2434;
     --line-strong: #4c3044;
+  --control-border: #7d6273;
+    --control-border: #7d6273;
     --brand: #e0578b;
     --brand-ink: #2a0716;
     --brand-2: #ec73a0;
@@ -85,6 +88,7 @@
   --ink-3: #b69dab;
   --line: #3a2434;
   --line-strong: #4c3044;
+  --control-border: #7d6273;
   --brand: #e0578b;
   --brand-ink: #2a0716;
   --brand-2: #ec73a0;
@@ -120,6 +124,7 @@
   --color-ink-3: var(--ink-3);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
+  --color-control: var(--control-border);
   --color-brand: var(--brand);
   --color-brand-ink: var(--brand-ink);
   --color-brand-2: var(--brand-2);
@@ -165,7 +170,7 @@ body {
 }
 
 .tnum {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 
 .shadow-soft {
@@ -190,6 +195,15 @@ body {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
   border-radius: 6px;
+}
+
+/* On raspberry surfaces the brand ring would vanish */
+.on-brand :focus-visible {
+  outline-color: var(--brand-ink);
+}
+
+html {
+  scroll-padding-top: 8rem;
 }
 
 .scrollbar-thin {

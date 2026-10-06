@@ -37,7 +37,7 @@ function Hero() {
         <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: EASE }} className="text-[12px] font-semibold uppercase tracking-[0.18em] text-brand">
           Ikeja kitchen · delivered across Lagos
         </motion.p>
-        <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.05, ease: EASE }} className="mt-4 font-display text-[2.25rem] leading-[1.04] text-ink sm:text-5xl md:text-[2.4rem] lg:text-[3.5rem]">
+        <motion.h1 initial={{ y: 18 }} animate={{ y: 0 }} transition={{ duration: 0.9, delay: 0.05, ease: EASE }} className="mt-4 font-display text-[2.25rem] leading-[1.04] text-ink sm:text-5xl md:text-[2.4rem] lg:text-[3.5rem]">
           Celebration cakes <span className="italic text-brand">Lagos remembers</span>
         </motion.h1>
         <motion.p initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.9, delay: 0.12, ease: EASE }} className="mt-5 max-w-md text-base leading-relaxed text-ink-2 sm:text-lg">
@@ -54,11 +54,11 @@ function Hero() {
       </div>
 
       <div className="relative mx-auto w-full max-w-md md:max-w-none">
-        <motion.div initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1.1, ease: EASE }} className="relative ms-auto aspect-[4/5] w-[82%] overflow-hidden rounded-[2rem] bg-surface-2 md:max-h-[68dvh] md:w-[78%]">
+        <motion.div initial={{ scale: 0.97 }} animate={{ scale: 1 }} transition={{ duration: 1.1, ease: EASE }} className="relative ms-auto aspect-[4/5] w-[82%] overflow-hidden rounded-[2rem] bg-surface-2 md:max-h-[68dvh] md:w-[78%]">
           <Image src="/img/cake-drip-pink.jpg" alt="Tall pink drip cake topped with macarons" fill priority sizes="(min-width: 768px) 40vw, 80vw" className="object-cover" />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.25, ease: EASE }} className="absolute bottom-[-6%] start-0 aspect-square w-[42%] overflow-hidden rounded-[1.6rem] border-[6px] border-bg bg-surface-2 shadow-lift">
-          <Image src="/img/cupcake-pink.jpg" alt="Pink swirl cupcakes" fill sizes="(min-width: 768px) 18vw, 40vw" className="object-cover" />
+          <Image src="/img/cupcake-pink.jpg" alt="Pink swirl cupcakes" fill loading="eager" sizes="(min-width: 768px) 18vw, 40vw" className="object-cover" />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.45, ease: EASE }} className="absolute start-[4%] top-[8%] rounded-2xl border border-line bg-surface/90 px-4 py-3 shadow-soft backdrop-blur">
           <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-3">8&quot; custom cake</p>

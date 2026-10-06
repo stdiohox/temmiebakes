@@ -125,7 +125,7 @@ export default function CustomersPage() {
         {shown.length === 0 ? (
           <Empty icon={<UsersThree size={28} />} title="No customers match" sub="Try a different search or clear the filters." action={filtered && <Button variant="secondary" size="sm" onClick={() => { setQ(""); setSegment(""); setTag(""); setZone(""); setPage(0); }}>Clear filters</Button>} />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[960px] text-left text-[13px]">
               <thead className="text-xs text-ink-3">
                 <tr className="border-b border-line">

@@ -78,7 +78,7 @@ export function SiteAssistant() {
               <button onClick={() => fire("whatsapp")} className="grid h-12 w-12 place-items-center rounded-full bg-wa text-white shadow-lift transition-transform hover:scale-105" aria-label="Order on WhatsApp (demo)">
                 <WhatsappLogo size={24} weight="fill" />
               </button>
-              <button onClick={() => fire("web")} className="pulse-ring inline-flex h-14 items-center gap-2 rounded-full bg-brand pe-5 ps-4 text-brand-ink shadow-lift transition-transform hover:scale-[1.03]" aria-label="Chat with Tia">
+              <button onClick={() => fire("web")} className="pulse-ring inline-flex h-14 items-center gap-2 rounded-full bg-brand pe-5 ps-4 text-brand-ink shadow-lift transition-transform hover:scale-[1.03]">
                 <ChatCircleDots size={24} weight="fill" />
                 <span className="text-sm font-semibold">Ask Tia</span>
               </button>
@@ -109,14 +109,14 @@ function WebChat({ convId, onClose, prefill }: { convId?: string; onClose: () =>
       role="dialog"
       aria-label="Chat with Tia"
     >
-      <div className="flex items-center gap-3 bg-brand px-4 py-3 text-brand-ink">
+      <div className="on-brand flex items-center gap-3 bg-brand px-4 py-3 text-brand-ink">
         <span className="relative">
           <Logo size={36} />
           <span className="absolute -bottom-0.5 -end-0.5 h-3 w-3 rounded-full border-2 border-brand bg-[#5cbf8a]" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-semibold">Tia · Temmiebakes</p>
-          <p className="text-xs opacity-80">AI assistant · replies instantly, day or night</p>
+          <p className="text-xs">AI assistant · replies instantly, day or night</p>
         </div>
         <button onClick={onClose} className="rounded-full p-1.5 hover:bg-white/10" aria-label="Close chat">
           <X size={18} />
@@ -151,12 +151,12 @@ function PhoneChat({ kind, convId, onClose, prefill }: { kind: "whatsapp" | "ins
         aria-modal="true"
         aria-label={ig ? "Instagram DM demo" : "WhatsApp demo"}
       >
-        <div className={cx("flex items-center justify-between px-5 pt-2 text-[11px] font-semibold", ig ? "bg-surface text-ink" : "bg-wa text-white")}>
+        <div className={cx("flex items-center justify-between px-5 pt-2 text-[11px] font-semibold", ig ? "bg-surface text-ink" : "on-brand bg-wa text-white")}>
           <span>9:41</span>
           <span className="h-5 w-24 rounded-full bg-[#111]" />
           <span>5G</span>
         </div>
-        <div className={cx("flex items-center gap-2.5 px-3 pb-2.5 pt-1.5", ig ? "border-b border-line bg-surface text-ink" : "bg-wa text-white")}>
+        <div className={cx("flex items-center gap-2.5 px-3 pb-2.5 pt-1.5", ig ? "border-b border-line bg-surface text-ink" : "on-brand bg-wa text-white")}>
           <button onClick={onClose} aria-label="Close" className="rounded-full p-1 hover:bg-black/10">
             <ArrowLeft size={20} />
           </button>

@@ -70,7 +70,12 @@ function Message({ m, variant, fresh, linkTarget }: { m: ChatMessage; variant: T
   }
   return (
     <>
-      <Bubble variant={variant} from={m.from} text={shown} at={m.at} />
+      {done ? <Bubble variant={variant} from={m.from} text={shown} at={m.at} /> : (
+        <>
+          <div aria-hidden className="contents"><Bubble variant={variant} from={m.from} text={shown} at={m.at} /></div>
+          <p className="sr-only">{m.text}</p>
+        </>
+      )}
       {m.productIds?.length && (done || !fresh) ? <ProductStrip ids={m.productIds} variant={variant} target={linkTarget} /> : null}
       {m.card && (done || !fresh) ? <CardView card={m.card} variant={variant} /> : null}
     </>
@@ -239,7 +244,7 @@ export function Composer({ onSend, placeholder, variant, disabled, autoFocus }: 
         autoComplete="off"
         className={cx(
           "h-11 min-w-0 flex-1 px-4 text-[14px] text-ink placeholder:text-ink-3 focus:outline-none",
-          variant === "whatsapp" ? "rounded-full bg-surface focus-visible:ring-2 focus-visible:ring-wa" : "rounded-full border border-line-strong bg-surface focus:border-brand",
+          variant === "whatsapp" ? "rounded-full bg-surface focus-visible:ring-2 focus-visible:ring-wa" : "rounded-full border border-control bg-surface focus:border-brand",
         )}
       />
       <button type="submit" disabled={disabled} className={cx("grid h-11 w-11 shrink-0 place-items-center rounded-full text-white transition-transform active:scale-95 disabled:opacity-50", variant === "whatsapp" ? "bg-wa" : "bg-brand")} aria-label="Send">

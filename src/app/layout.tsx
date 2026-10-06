@@ -5,7 +5,7 @@ import "./globals.css";
 
 const display = Playfair_Display({ variable: "--font-display-face", subsets: ["latin"], weight: ["500", "600", "700"], style: ["normal", "italic"] });
 const body = Figtree({ variable: "--font-body", subsets: ["latin"] });
-const mono = JetBrains_Mono({ variable: "--font-mono-face", subsets: ["latin"], weight: ["400", "500"] });
+const mono = JetBrains_Mono({ variable: "--font-mono-face", subsets: ["latin"], weight: ["400", "500"], preload: false });
 
 export const metadata: Metadata = {
   title: { default: "Temmiebakes · Cakes & desserts in Lagos", template: "%s · Temmiebakes" },

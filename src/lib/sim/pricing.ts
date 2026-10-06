@@ -144,7 +144,7 @@ export function quoteCatering(packageId: PackageId, guests: number) {
 }
 
 export function depositFor(totalNGN: number, pct: number) {
-  return round500((totalNGN * pct) / 100);
+  return Math.ceil((totalNGN * pct) / 100 / 50) * 50; // exact to the nearest ₦50, so "50%" reads true
 }
 
 /** Lagos-time date key (YYYY-MM-DD) for an instant. */

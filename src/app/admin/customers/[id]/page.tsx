@@ -148,7 +148,7 @@ function Profile({ c }: { c: Customer }) {
             {orders.length === 0 ? (
               <Empty title="No orders yet" sub="Orders placed through Tia, the website or the team will appear here." />
             ) : (
-              <div className="mt-2 overflow-x-auto">
+              <div className="relative mt-2 overflow-x-auto">
                 <table className="w-full min-w-[600px] text-left text-[13px]">
                   <thead className="text-xs text-ink-3">
                     <tr className="border-b border-line">

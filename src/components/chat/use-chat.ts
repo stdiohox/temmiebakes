@@ -53,8 +53,8 @@ export function useChat(convId: string | undefined) {
         setFreshId("__pending__");
         run((s) => {
           applyReply(s, convId, reply);
-          const c = s.conversations.find((x) => x.id === convId)!;
-          aiId = [...c.messages].reverse().find((m) => m.from === "ai")?.id;
+          const c = s.conversations.find((x) => x.id === convId);
+          aiId = c ? [...c.messages].reverse().find((m) => m.from === "ai")?.id : undefined;
         });
         setFreshId(aiId ?? null);
         if (reply.handoff) {

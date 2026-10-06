@@ -155,7 +155,7 @@ export default function DeliveriesPage() {
 
         <Card className="min-w-0">
           <CardHead title="Delivery zones" sub="Fees and travel time from Ikeja, with orders in the last 30 days" />
-          <div className="scrollbar-thin overflow-x-auto px-5 pb-4 pt-2">
+          <div className="relative scrollbar-thin overflow-x-auto px-5 pb-4 pt-2">
             <table className="w-full min-w-[360px] text-[13px]">
               <thead>
                 <tr className="text-left text-xs text-ink-3">

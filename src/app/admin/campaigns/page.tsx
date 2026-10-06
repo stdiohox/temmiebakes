@@ -323,7 +323,7 @@ function SendLog() {
       {rows.length === 0 ? (
         <Empty title="No messages yet" sub="Messages appear here as automations and broadcasts send them." />
       ) : (
-        <div className="mt-3 overflow-x-auto">
+        <div className="relative mt-3 overflow-x-auto">
           <table className="w-full min-w-[820px] text-left text-[13px]">
             <thead className="text-xs text-ink-3">
               <tr className="border-y border-line">

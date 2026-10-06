@@ -87,7 +87,7 @@ function Ingredients() {
             </Button>
           }
         />
-        <div className="mt-3 overflow-x-auto">
+        <div className="relative mt-3 overflow-x-auto">
           <table className="w-full min-w-[860px] text-[13px]">
             <thead>
               <tr className="border-y border-line text-start text-xs text-ink-3">
@@ -376,7 +376,7 @@ function Margins() {
 
       <Card>
         <CardHead title="Margins by product" sub={`Lowest margin first · average ${Math.round(avgMargin * 100)}% · items under 60% are highlighted`} />
-        <div className="mt-3 overflow-x-auto">
+        <div className="relative mt-3 overflow-x-auto">
           <table className="w-full min-w-[900px] text-[13px]">
             <thead>
               <tr className="border-y border-line text-xs text-ink-3">

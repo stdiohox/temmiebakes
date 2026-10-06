@@ -32,7 +32,7 @@ export function buildSeed(): DemoData {
     const seg: Segment = i < 10 ? "corporate" : i < 46 ? "student" : i < 52 ? "reseller" : "individual";
     const first = r.pick(FIRST);
     const last = r.pick(LAST);
-    const createdAt = now - Math.floor(160 * Math.pow(r.next(), 1.3)) * DAY - r.int(0, 20) * HOUR;
+    const createdAt = now - Math.floor(160 * Math.pow(r.next(), 0.6)) * DAY - r.int(0, 20) * HOUR;
     const post = createdAt >= goLive;
     const occs: Customer["occasions"] = [];
     if (seg === "individual" || seg === "student") {
@@ -184,7 +184,9 @@ export function buildSeed(): DemoData {
   const capacity = 20;
   customers.forEach((c) => {
     const created = new Date(c.createdAt).getTime();
-    const n = c.segment === "corporate" ? r.int(2, 6) : c.segment === "reseller" ? r.int(3, 7) : c.segment === "student" ? r.int(0, 2) : r.weighted([[1, 38], [2, 26], [3, 18], [4, 10], [6, 8]]);
+    const n0 = c.segment === "corporate" ? r.int(2, 6) : c.segment === "reseller" ? r.int(3, 7) : c.segment === "student" ? r.int(0, 2) : r.weighted([[1, 38], [2, 26], [3, 18], [4, 10], [6, 8]]);
+    // newer customers have had less time to re-order; without this, orders bunch into the last few weeks
+    const n = n0 && Math.max(1, Math.round(n0 * Math.min(1, (now - created) / (120 * DAY))));
     for (let k = 0; k < n; k++) {
       const placed = created + r.int(0, Math.max(1, Math.floor((now - created) / DAY))) * DAY + r.int(8, 21) * HOUR;
       if (placed > now) continue;
@@ -195,6 +197,14 @@ export function buildSeed(): DemoData {
       const o = makeOrder(c, due, placed, { corporate: c.segment === "corporate" && r.chance(0.7) });
       if (dayKey(due) >= dayKey(now) && pointsBooked(orders, dayKey(due)) + o.ovenPoints > capacity * (dayKey(due) === dayKey(now) ? 0.9 : 0.72)) continue;
       orders.push(o);
+      // after go-live, reminders and re-order nudges bring customers back more often, ramping up over time
+      if (placed >= goLive && c.segment === "individual" && r.chance(0.5 * Math.min(1, (placed - goLive) / (70 * DAY)))) {
+        const again = placed + r.int(2, 9) * DAY;
+        let due2 = Math.floor((again + r.int(1, 4) * DAY) / DAY) * DAY + (r.pick([10, 11, 12, 13, 14, 15, 16]) - 1) * HOUR;
+        if (new Date(due2).getUTCDay() === 0) due2 += DAY;
+        const o2 = again < now ? makeOrder(c, due2, again) : null;
+        if (o2 && !(dayKey(due2) >= dayKey(now) && pointsBooked(orders, dayKey(due2)) + o2.ovenPoints > capacity * 0.72)) orders.push(o2);
+      }
       // enquiries that never paid: slow replies lost far more of these before automation
       const post = placed >= goLive;
       if (due < now && r.chance(post ? 0.32 : 0.85)) orders.push(makeOrder(c, due, placed - r.int(1, 30) * HOUR, { lost: true }));
@@ -208,6 +218,7 @@ export function buildSeed(): DemoData {
     while (pointsBooked(orders, dayKey(t + 12 * HOUR)) < capacity * (d === 0 ? 0.85 : d < 3 ? 0.7 : 0.5) && guard++ < 20) {
       const c = r.pick(customers.filter((x) => x.segment === "individual"));
       const due = t + (r.pick([10, 11, 12, 13, 14, 15, 16, 17]) - 1) * HOUR;
+      if (due < now + HOUR) continue; // today's filler only books slots still ahead, never past revenue
       const placed = Math.min(now - HOUR, due - r.int(1, 6) * DAY);
       const o = makeOrder(c, due, placed);
       if (pointsBooked(orders, dayKey(due)) + o.ovenPoints > capacity * 0.8) break;
@@ -234,7 +245,7 @@ export function buildSeed(): DemoData {
   const cBy = (i: number) => customers[i];
   const p = (slug: string) => PRODUCTS.find((x) => x.slug === slug)!.id;
   const convs: { cust: number; channel: Conversation["channel"]; handle?: string; status: Conversation["status"]; reason?: string; mins: number; msgs: [Conversation["messages"][number]["from"], string, string[]?][] }[] = [
-    { cust: 60, channel: "instagram", handle: "@bimpe.lawal", status: "ai", mins: 14, msgs: [
+    { cust: 60, channel: "instagram", status: "ai", mins: 14, msgs: [
       ["user", "Hi dear, how much is the pink drip cake? For my daughter's 7th birthday on Saturday"],
       ["ai", "Hi! I'm Tia, Temmiebakes' AI assistant. The Pink Drip & Macaron Cake is ₦72,000 for an 8-inch tall cake (serves about 24). Saturday is available. Would you like it delivered, and to which area?", [p("pink-drip-and-macaron-cake")]],
       ["user", "Yes deliver to Magodo. Can you write Happy 7th Birthday Ife on it"],
@@ -246,11 +257,10 @@ export function buildSeed(): DemoData {
       ["user", "Next week Friday"],
       ["ai", "Next Friday is available. Fondant designs need 4 days' notice, so we're fine. Would you like 'Happy 40th' in gold? I can also add 12 red velvet cupcakes for the guests at ₦30,000."],
     ] },
-    { cust: 71, channel: "instagram", handle: "@tolu.ogunleye", status: "handoff", reason: "Complaint or refund", mins: 190, msgs: [
+    { cust: 71, channel: "instagram", status: "handoff", reason: "Complaint or refund", mins: 34, msgs: [
       ["user", "My cake arrived and the icing had melted on one side 😩"],
       ["ai", "I'm so sorry, that's not the experience we want for you. I'm passing this straight to Temmie so she can make it right."],
       ["system", "Handed to Temmie · reason: Complaint or refund"],
-      ["agent", "Hi Tolu, Temmie here. I'm really sorry. Please send a photo; we'll send a fresh tray of cupcakes on us this afternoon and I've briefed the rider on the cooler bag."],
     ] },
     { cust: 14, channel: "web", status: "ai", mins: 300, msgs: [
       ["user", "Do you run baking classes for beginners?"],
@@ -261,7 +271,7 @@ export function buildSeed(): DemoData {
       ["ai", "We can. The corporate breakfast box is ₦7,500 per guest (croissant or cinnamon roll, wrap, fruit, banana bread and juice), so 60 guests comes to ₦450,000. I've drafted a quote, and Ifeoma will send it on your company letterhead within the hour."],
       ["agent", "Hello, Ifeoma here. Quote CQ-214 is in your inbox. We can also set this up monthly with 5% off."],
     ] },
-    { cust: 86, channel: "instagram", handle: "@kemi_cakes_lover", status: "ai", mins: 8, msgs: [
+    { cust: 86, channel: "instagram", status: "ai", mins: 8, msgs: [
       ["user", "Una dey deliver to Lekki? I want cupcakes tomorrow"],
       ["ai", "Yes we do! Delivery to Lekki Phase 1 is ₦9,500. Cupcakes need 24 hours' notice, so tomorrow works if we confirm today. Our bestsellers are Red Velvet (₦15,000 for 6) and Cookies & Cream (₦16,000 for 6). Which one would you like?", [p("red-velvet-cupcakes"), p("cookies-and-cream-cupcakes")]],
     ] },
@@ -275,7 +285,7 @@ export function buildSeed(): DemoData {
       channel: s.channel,
       customerId: c.id,
       name: c.name,
-      handle: s.handle ?? (s.channel === "whatsapp" ? c.phone : undefined),
+      handle: s.handle ?? (s.channel === "whatsapp" ? c.phone : s.channel === "instagram" ? c.instagram ?? `@${c.name.toLowerCase().replace(/[^a-z]+/g, ".")}` : undefined),
       status: s.status,
       handoffReason: s.reason,
       draft: {},

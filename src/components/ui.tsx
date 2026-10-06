@@ -56,7 +56,7 @@ export function Badge({ tone = "neutral", className, children }: { tone?: Tone; 
 
 export function Card({ className, children, ...p }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div {...p} className={cx("rounded-2xl border border-line bg-surface", className)}>
+    <div {...p} className={cx("min-w-0 rounded-2xl border border-line bg-surface", className)}>
       {children}
     </div>
   );
@@ -103,12 +103,12 @@ export function Field({ label, hint, error, children, className }: { label: stri
       </label>
       {children(id)}
       {hint && !error && <p className="text-xs text-ink-3">{hint}</p>}
-      {error && <p className="text-xs text-bad">{error}</p>}
+      {error && <p role="alert" className="text-xs text-bad">{error}</p>}
     </div>
   );
 }
 
-const inputCls = "h-10 w-full rounded-[10px] border border-line-strong bg-surface px-3 text-sm text-ink placeholder:text-ink-3 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+const inputCls = "h-10 w-full rounded-[10px] border border-control bg-surface px-3 text-sm text-ink placeholder:text-ink-3 focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
 
 export const Input = forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...p }, ref) {
   return <input ref={ref} {...p} className={cx(inputCls, className)} />;

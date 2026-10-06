@@ -105,7 +105,7 @@ export default function CorporatePage() {
         </div>
       ) : (
         <Card>
-          <div className="overflow-x-auto">
+          <div className="relative overflow-x-auto">
             <table className="w-full min-w-[1020px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-xs text-ink-3">
@@ -147,7 +147,7 @@ export default function CorporatePage() {
         {corporate.length === 0 ? (
           <Empty title="No corporate clients yet" />
         ) : (
-          <div className="mt-3 overflow-x-auto">
+          <div className="relative mt-3 overflow-x-auto">
             <table className="w-full min-w-[640px] text-[13px]">
               <thead>
                 <tr className="border-y border-line text-xs text-ink-3">

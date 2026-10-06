@@ -115,7 +115,7 @@ export default function OrdersPage() {
         <Board columnOrders={columnOrders} />
       ) : (
         <Card className="overflow-hidden">
-          <div className="scrollbar-thin overflow-x-auto">
+          <div className="relative scrollbar-thin overflow-x-auto">
             <table className="w-full min-w-[860px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left text-xs text-ink-3">
@@ -186,7 +186,7 @@ function Board({ columnOrders }: { columnOrders: (s: OrderStatus) => Order[] }) 
   };
 
   return (
-    <div className="scrollbar-thin -mx-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6">
+    <div className="relative scrollbar-thin -mx-4 overflow-x-auto px-4 pb-3 sm:-mx-6 sm:px-6">
       <div className="flex gap-3">
         {COLUMNS.map((st) => {
           const list = columnOrders(st);

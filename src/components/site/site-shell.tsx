@@ -8,7 +8,10 @@ import { useState } from "react";
 import { useDemo } from "@/lib/store";
 import { toast } from "@/lib/toast";
 import { cx, Logo } from "../ui";
-import { SiteAssistant } from "./site-assistant";
+import dynamic from "next/dynamic";
+
+// The chat widget is closed on load, so it does not need to be in the first bundle
+const SiteAssistant = dynamic(() => import("./site-assistant").then((m) => m.SiteAssistant), { ssr: false });
 
 export const NAV = [
   { href: "/menu", label: "Menu" },
@@ -31,7 +34,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="grain relative min-h-[100dvh] bg-bg">
-      <div className="no-print flex h-9 items-center justify-center gap-3 bg-brand px-4 text-[12.5px] text-brand-ink">
+      <div className="on-brand no-print flex h-9 items-center justify-center gap-3 bg-brand px-4 text-[12.5px] text-brand-ink">
         <span className="hidden sm:inline">Interactive demo for Temmiebakes · sample data</span>
         <span className="sm:hidden">Demo · sample data</span>
         <button

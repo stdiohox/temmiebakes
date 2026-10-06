@@ -68,13 +68,12 @@ function Menu() {
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6">
       <div className="sticky top-[4.5rem] z-30 -mx-4 border-b border-line bg-bg/90 px-4 pb-3 pt-2 backdrop-blur-xl sm:-mx-6 sm:px-6">
-        <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1" role="tablist" aria-label="Menu categories">
+        <div className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1" role="group" aria-label="Menu categories">
           {tabs.map((t) => (
             <button
               key={t.id}
               type="button"
-              role="tab"
-              aria-selected={cat === t.id}
+              aria-pressed={cat === t.id}
               onClick={() => setCat(t.id)}
               className={cx("h-9 shrink-0 rounded-full px-4 text-sm font-medium transition-colors", cat === t.id ? "bg-ink text-bg" : "text-ink-2 hover:bg-surface-2 hover:text-ink")}
             >
