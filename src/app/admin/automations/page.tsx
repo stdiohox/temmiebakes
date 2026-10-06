@@ -66,8 +66,8 @@ const RUNNERS: Partial<Record<AutomationId, { label: string; fn: (s: S) => strin
       const today = dayKey(Date.now());
       const todays = s.orders.filter((o) => dayKey(o.dueAt) === today && !["cancelled", "enquiry", "quoted"].includes(o.status));
       const value = todays.reduce((a, o) => a + o.totalNGN, 0);
-      logEvent(s, { automation: "daily-report", kind: "action", title: "Morning brief sent to Temmie on WhatsApp", detail: `${todays.length} orders today worth ${naira(value)} · ${s.conversations.filter((c) => c.status === "handoff").length} chats need you`, minutesSaved: 20 });
-      return "Morning brief sent to Temmie";
+      logEvent(s, { automation: "daily-report", kind: "action", title: "Morning brief sent to Koret on WhatsApp", detail: `${todays.length} orders today worth ${naira(value)} · ${s.conversations.filter((c) => c.status === "handoff").length} chats need you`, minutesSaved: 20 });
+      return "Morning brief sent to Koret";
     },
   },
 };

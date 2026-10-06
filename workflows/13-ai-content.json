@@ -12,7 +12,7 @@
           ]
         }
       },
-      "id": "134d7123-b299-465c-857a-b3335025b596",
+      "id": "440cf382-7ce1-4eaf-8e98-654ef42da5e2",
       "name": "Mon & Thu 07:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -29,7 +29,7 @@
         "filterType": "string",
         "filterString": "=week=eq.{{ $now.toFormat('kkkk-WW') }}"
       },
-      "id": "f548ca12-c334-4ee4-9ce6-5afa26ae0659",
+      "id": "03d61886-8bd6-418d-9bae-ad73651c907c",
       "name": "Best sellers & new items",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -72,7 +72,7 @@
           }
         }
       },
-      "id": "fbb6067a-ccbb-4d5b-8fa4-7988eacc4aed",
+      "id": "e13c67be-e80f-42e4-b36e-1a923ea84060",
       "name": "Claude: write drafts",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -94,7 +94,7 @@
       "parameters": {
         "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.content?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"drafts\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
       },
-      "id": "5ab37052-09cf-4ed8-bfe8-0650ec05a490",
+      "id": "d24b3533-2621-483e-aa3f-0556c410d66a",
       "name": "Validate drafts",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -113,7 +113,7 @@
           },
           "conditions": [
             {
-              "id": "0c882213-6bdf-470b-ad58-2c649d14a50d",
+              "id": "acf2b660-8b1e-44ec-8f06-29e006c36e05",
               "leftValue": "={{ !$json.needs_review }}",
               "rightValue": true,
               "operator": {
@@ -127,7 +127,7 @@
         },
         "options": {}
       },
-      "id": "1ab20527-e7a1-41f2-b104-1fad4a733296",
+      "id": "4411cd59-395b-4716-9e5e-5afbbc460f2e",
       "name": "Valid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -158,8 +158,8 @@
           }
         }
       },
-      "id": "75196bce-aba4-401f-9bfd-0f05927f99cc",
-      "name": "Tell Temmie drafts failed",
+      "id": "0a83dad3-83ba-4729-bc7a-2691a0d82470",
+      "name": "Tell Koret drafts failed",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -180,7 +180,7 @@
       "parameters": {
         "jsCode": "return $json.ai.drafts.map((d) => ({ json: { ...d, status: \"awaiting-approval\", text: d.text.replace(/[—–]/g, \",\") } }));"
       },
-      "id": "82435b8e-f114-42f2-9625-4f04520ccfff",
+      "id": "828b62e3-d617-4abb-b776-82cb5af5031f",
       "name": "One row per draft",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -194,7 +194,7 @@
         "tableId": "content_drafts",
         "dataToSend": "autoMapInputData"
       },
-      "id": "fcd6918b-7629-44ea-b070-4937c8240383",
+      "id": "dade4638-48a2-49d2-8c50-07d416bfd3c0",
       "name": "Save to approval queue",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -231,8 +231,8 @@
           }
         }
       },
-      "id": "136a9fd8-b3b6-40fb-9d34-3159600e6757",
-      "name": "Ping Temmie to approve",
+      "id": "73627b27-75bd-401a-a1cf-e94910889291",
+      "name": "Ping Koret to approve",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -306,7 +306,7 @@
         ],
         [
           {
-            "node": "Tell Temmie drafts failed",
+            "node": "Tell Koret drafts failed",
             "type": "main",
             "index": 0
           }
@@ -328,7 +328,7 @@
       "main": [
         [
           {
-            "node": "Ping Temmie to approve",
+            "node": "Ping Koret to approve",
             "type": "main",
             "index": 0
           }

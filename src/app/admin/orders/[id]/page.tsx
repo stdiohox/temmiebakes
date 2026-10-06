@@ -74,7 +74,7 @@ export default function OrderDetailPage() {
           actions={
             <>
               {!closed && <Button variant="danger" onClick={() => setConfirmCancel(true)}><X size={15} /> Cancel order</Button>}
-              {ns && nl && <Button onClick={() => advance(o.id, ns, "Temmie")}>{nl} <ArrowRight size={15} /></Button>}
+              {ns && nl && <Button onClick={() => advance(o.id, ns, "Koret")}>{nl} <ArrowRight size={15} /></Button>}
             </>
           }
         />
@@ -278,7 +278,7 @@ export default function OrderDetailPage() {
         footer={
           <>
             <Button variant="ghost" onClick={() => setConfirmCancel(false)}>Keep order</Button>
-            <Button variant="danger" onClick={() => ((advance(o.id, "cancelled", "Temmie"), setConfirmCancel(false)))}>Cancel order</Button>
+            <Button variant="danger" onClick={() => ((advance(o.id, "cancelled", "Koret"), setConfirmCancel(false)))}>Cancel order</Button>
           </>
         }
       >

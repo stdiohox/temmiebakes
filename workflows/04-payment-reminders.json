@@ -8,8 +8,8 @@
         "height": 220,
         "color": 4
       },
-      "id": "ee0121da-91ab-4d2b-ab80-47f94c7ac7ce",
-      "name": "Note 84c6",
+      "id": "72352d73-b4c5-4340-98f1-66702c78da72",
+      "name": "Note e83a",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "7c55e810-f07c-49a6-99e5-104d0608c674",
+      "id": "70b79399-c2cd-41c6-b5b5-96e2333ed668",
       "name": "Webhook: Paystack charge.success",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "0455bacf-7eb4-4181-94f6-8ac817d409d7"
+      "webhookId": "e3df8622-0168-4970-b6be-15370cb12147"
     },
     {
       "parameters": {
         "jsCode": "const crypto = require(\"crypto\");\nconst sig = $json.headers[\"x-paystack-signature\"];\nconst hash = crypto.createHmac(\"sha512\", $vars.PAYSTACK_SECRET).update(JSON.stringify($json.body)).digest(\"hex\");\nif (hash !== sig) return [{ json: { valid: false } }];\nconst d = $json.body.data;\nreturn [{ json: { valid: $json.body.event === \"charge.success\", reference: d.reference, amount_ngn: d.amount / 100, number: d.reference.split(\"-\")[0] + \"-\" + d.reference.split(\"-\")[1], kind: d.reference.endsWith(\"-dep\") ? \"deposit\" : \"balance\" } }];"
       },
-      "id": "b6eed23e-1cfd-4768-ab8a-4fbefc1ca9cf",
+      "id": "ca39824e-b597-4fee-bf7a-afb3cab8d058",
       "name": "Verify signature",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "963e29c4-96c8-42a8-8894-b2199c54d0f1",
+              "id": "ecea201d-5ec7-4e5c-a9e6-34116211f22c",
               "leftValue": "={{ $json.valid }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "33d450b7-2cd8-4364-93b9-cbd4d2a15117",
+      "id": "fc0e0a9f-abd2-4b38-9754-4846df3dc73c",
       "name": "Valid payment?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -86,7 +86,7 @@
         "responseBody": "={{ { ok: false } }}",
         "options": {}
       },
-      "id": "c64aae95-5698-4efa-965d-8afcbf0f214b",
+      "id": "8b14a82b-3b93-47ac-896b-caf97f67a408",
       "name": "Respond 401",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -103,7 +103,7 @@
         "filterType": "string",
         "filterString": "=number=eq.{{ $json.number }}"
       },
-      "id": "a15d856b-5cde-4590-80d1-7b3c0073c0f0",
+      "id": "f30c6e59-7fb8-4aeb-9dde-ccabebbec227",
       "name": "Load order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -123,7 +123,7 @@
       "parameters": {
         "jsCode": "const p = $(\"Verify signature\").first().json;\nconst paid = Number($json.paid_ngn) + p.amount_ngn;\nreturn [{ json: { id: $json.id, paid_ngn: paid, payment_status: paid >= $json.total_ngn ? \"paid\" : \"deposit\", status: $json.status === \"quoted\" ? \"confirmed\" : $json.status, phone: $json.phone, number: $json.number, balance: Math.max(0, $json.total_ngn - paid) } }];"
       },
-      "id": "aae0799e-2891-4c4d-a2ad-4c33951e0412",
+      "id": "36d4e56a-6e52-4d79-a2aa-0a9531a3898e",
       "name": "Apply payment",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -140,7 +140,7 @@
         "filterString": "=id=eq.{{ $json.id }}",
         "dataToSend": "autoMapInputData"
       },
-      "id": "d719e1cc-3824-45d4-8246-2b76f56a9b66",
+      "id": "5d4c969b-a53d-45ad-acf8-50c1ab2ed6bf",
       "name": "Update order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -177,7 +177,7 @@
           }
         }
       },
-      "id": "3867c8b9-ab75-44cf-b9a4-aa999ed38df9",
+      "id": "c88e7841-ebad-4b47-b3bb-5f9b0442038d",
       "name": "Confirm on WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -201,7 +201,7 @@
         "responseBody": "={{ { ok: true } }}",
         "options": {}
       },
-      "id": "ae1aded1-9b0d-4720-9857-335eb59bd82c",
+      "id": "e50194d7-c6ff-4404-90a5-88f8f08404ca",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -221,7 +221,7 @@
           ]
         }
       },
-      "id": "8108b946-4d1c-45b5-8332-beca34469206",
+      "id": "cbf2fd91-d70b-437d-9aa0-0baf29432c5c",
       "name": "Daily 08:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -238,7 +238,7 @@
         "filterType": "string",
         "filterString": "=payment_status=eq.deposit&due_date=lte.{{ $now.plus({ days: 2 }).toFormat('yyyy-LL-dd') }}&due_date=gte.{{ $now.toFormat('yyyy-LL-dd') }}"
       },
-      "id": "431d8072-b427-45fc-93a3-c199ae785fa8",
+      "id": "3c5a1c29-f7d2-4a61-b982-2d925dda4897",
       "name": "Balances due in 48h",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -264,7 +264,7 @@
           },
           "conditions": [
             {
-              "id": "b82e52e8-0360-4c78-985e-6372feffc343",
+              "id": "b68aef49-8098-4864-85ef-5bdf4df4c7e2",
               "leftValue": "={{ $json.id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -278,7 +278,7 @@
         },
         "options": {}
       },
-      "id": "c2ec76d6-6719-440b-b531-b5201c09cede",
+      "id": "5aa875ed-8b20-44ff-9d33-0de72eb0fb75",
       "name": "Any due?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -289,7 +289,7 @@
     },
     {
       "parameters": {},
-      "id": "6e04c78b-2ca1-4c04-9e7e-8b84af861391",
+      "id": "cdc51461-fbf7-41d7-b09c-24bf23a5f26d",
       "name": "No balances due",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -320,7 +320,7 @@
           }
         }
       },
-      "id": "b5dc42fe-66a2-470e-8305-bd3c5697f007",
+      "id": "073fa19f-6c01-424d-8414-df62548fdcaa",
       "name": "Paystack: balance link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -360,7 +360,7 @@
           }
         }
       },
-      "id": "583f1e05-c0d2-4fe2-86e9-ac258f224bd2",
+      "id": "2905b1ff-972d-4282-b6e5-c566051b4f08",
       "name": "Balance reminder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -382,7 +382,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"payment-reminders\",\n  title: \"Balance reminder sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 3,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "f6ef2338-9db5-4800-aea3-5d69879edec2",
+      "id": "c73cff12-5e74-430d-ac86-43f7237b2df7",
       "name": "Log reminders",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

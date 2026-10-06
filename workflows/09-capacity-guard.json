@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Capacity guard\nEvery 2 hours: oven points booked per day for the next 7 days. Days at 90%+ are marked full so Tia and the website offer the next free date, and Temmie gets one alert per day.",
+        "content": "## Capacity guard\nEvery 2 hours: oven points booked per day for the next 7 days. Days at 90%+ are marked full so Tia and the website offer the next free date, and Koret gets one alert per day.",
         "width": 560,
         "height": 180,
         "color": 5
       },
-      "id": "369d4479-bb75-4b5f-919b-afe56d0fde79",
-      "name": "Note 8588",
+      "id": "580e9127-0c34-4f8b-bf76-1b3d6c651039",
+      "name": "Note a8d2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "88584fef-ed5b-44df-94ea-f5b3acae51a7",
+      "id": "b13edc7a-6e49-490b-a768-8f0fc13a2831",
       "name": "Every 2 hours",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=day=gte.{{ $now.toFormat('yyyy-LL-dd') }}&day=lte.{{ $now.plus({ days: 7 }).toFormat('yyyy-LL-dd') }}"
       },
-      "id": "e41160fb-34c6-4b8a-a9bc-f0173197a78d",
+      "id": "bb28fefc-2dcd-4dd0-87b4-8b0d33f9e620",
       "name": "Points booked, next 7 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -65,7 +65,7 @@
       "parameters": {
         "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst full = $input.all().map((i) => i.json).filter((d) => d.points >= cap * 0.9);\nreturn [{ json: { full_days: full.map((d) => d.day), any: full.length > 0 } }];"
       },
-      "id": "87cf79f4-55ef-4432-afdf-c45477ab28c2",
+      "id": "a2050ef9-a363-4bcb-914e-84f9aedd6005",
       "name": "Find full days",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -84,7 +84,7 @@
           },
           "conditions": [
             {
-              "id": "83be25d2-a26d-4805-8dcf-3cc75c0a5c24",
+              "id": "33e21c51-ccab-4f48-825c-38e20bab99ce",
               "leftValue": "={{ $json.any }}",
               "rightValue": true,
               "operator": {
@@ -98,7 +98,7 @@
         },
         "options": {}
       },
-      "id": "3af9f0ef-efc2-42ef-ae32-366b4321d20d",
+      "id": "9692ccab-35f2-4996-9889-0f9851daa318",
       "name": "Any day nearly full?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -109,7 +109,7 @@
     },
     {
       "parameters": {},
-      "id": "3d7960e5-223a-4fce-9b0f-4d28324956b7",
+      "id": "cf0a9882-2201-4a3c-aebe-093974212d0c",
       "name": "Room every day",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -124,7 +124,7 @@
         "tableId": "blocked_days",
         "dataToSend": "autoMapInputData"
       },
-      "id": "aee30478-94c2-4c30-8b6f-b7ecbbee5821",
+      "id": "88826c1a-7f01-4260-984b-99e25d20a4ab",
       "name": "Mark days full",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -161,8 +161,8 @@
           }
         }
       },
-      "id": "3a3e6416-a463-4a1b-9a02-540171686673",
-      "name": "Tell Temmie",
+      "id": "083d48c6-6dc9-405e-a64d-25cbe7cc3a50",
+      "name": "Tell Koret",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -236,7 +236,7 @@
       "main": [
         [
           {
-            "node": "Tell Temmie",
+            "node": "Tell Koret",
             "type": "main",
             "index": 0
           }

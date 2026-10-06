@@ -227,7 +227,7 @@ export function recordReview(s: S, orderId: string, rating: number, text: string
   o.rating = rating;
   o.review = text;
   logEvent(s, { automation: "review-request", kind: "trigger", title: `${rating}★ review received for ${o.number}`, detail: text.slice(0, 80), customerId: o.customerId, orderId, minutesSaved: 0 });
-  if (rating <= 3) logEvent(s, { automation: "review-request", kind: "alert", title: "Low rating: Temmie alerted to follow up personally", orderId, minutesSaved: 0 });
+  if (rating <= 3) logEvent(s, { automation: "review-request", kind: "alert", title: "Low rating: Koret alerted to follow up personally", orderId, minutesSaved: 0 });
 }
 
 // ---------------------------------------------------------------- stock
@@ -395,7 +395,7 @@ export function addUserMessage(s: S, convId: string, text: string) {
   if (cv.messages.filter((m) => m.from === "user").length === 1) logEvent(s, { automation: "ai-assistant", kind: "trigger", title: `New ${cv.channel === "instagram" ? "Instagram DM" : cv.channel === "whatsapp" ? "WhatsApp" : "website chat"}`, detail: text.slice(0, 80), customerId: cv.customerId, minutesSaved: 0 });
 }
 
-export function staffMessage(s: S, convId: string, text: string, staffName = "Temmie") {
+export function staffMessage(s: S, convId: string, text: string, staffName = "Koret") {
   const cv = s.conversations.find((c) => c.id === convId);
   if (!cv) return;
   cv.messages.push({ id: uid("m"), from: "agent", text, at: nowIso() });
@@ -450,8 +450,8 @@ export function applyReply(s: S, convId: string, r: Reply) {
     cv.status = "handoff";
     cv.handoffReason = r.handoff;
     ensureCustomer();
-    cv.messages.push({ id: uid("m"), from: "system", text: `Handed to Temmie · reason: ${r.handoff}`, at: nowIso() });
-    logEvent(s, { automation: "ai-assistant", kind: "handoff", title: "Handed to Temmie", detail: r.handoff, customerId: cv.customerId, minutesSaved: 2 });
+    cv.messages.push({ id: uid("m"), from: "system", text: `Handed to Koret · reason: ${r.handoff}`, at: nowIso() });
+    logEvent(s, { automation: "ai-assistant", kind: "handoff", title: "Handed to Koret", detail: r.handoff, customerId: cv.customerId, minutesSaved: 2 });
   }
 }
 

@@ -188,7 +188,7 @@ function Profile({ c }: { c: Customer }) {
                       <ch.icon size={18} weight="fill" className={ch.color} aria-label={ch.label} />
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2 text-xs text-ink-3">
-                          <span>{ch.label} · {cv.status === "ai" ? "Tia handling" : cv.status === "handoff" ? "Needs Temmie" : cv.status === "staff" ? "Team replied" : "Closed"}</span>
+                          <span>{ch.label} · {cv.status === "ai" ? "Tia handling" : cv.status === "handoff" ? "Needs Koret" : cv.status === "staff" ? "Team replied" : "Closed"}</span>
                           <span>{ago(cv.lastAt, now)}</span>
                         </span>
                         <span className="mt-0.5 line-clamp-2 block text-[13px] text-ink">{last?.text ?? "No messages"}</span>

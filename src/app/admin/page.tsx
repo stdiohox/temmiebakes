@@ -28,14 +28,14 @@ export default function Dashboard() {
   const todays = d.orders.filter((o) => dayKey(o.dueAt) === today && o.status !== "cancelled" && o.status !== "enquiry" && o.status !== "quoted").sort((a, b) => (a.dueAt < b.dueAt ? -1 : 1));
   const attention = [
     ...d.orders.filter((o) => o.status === "quoted" && now - new Date(o.createdAt).getTime() > 6 * 3600000 && new Date(o.dueAt).getTime() > now).map((o) => ({ kind: "Quote unpaid", text: `${o.number} · ${customer(o.customerId)?.name}`, href: `/admin/orders/${o.id}`, value: o.totalNGN })),
-    ...d.conversations.filter((c) => c.status === "handoff").map((c) => ({ kind: "Needs Temmie", text: `${c.name}: ${c.handoffReason}`, href: "/admin/inbox", value: 0 })),
+    ...d.conversations.filter((c) => c.status === "handoff").map((c) => ({ kind: "Needs Koret", text: `${c.name}: ${c.handoffReason}`, href: "/admin/inbox", value: 0 })),
     ...d.orders.filter((o) => o.paymentStatus === "deposit" && new Date(o.dueAt).getTime() - now < 2 * 86400000 && new Date(o.dueAt).getTime() > now).map((o) => ({ kind: "Balance due", text: `${o.number} · due ${ago(o.dueAt, now)}`, href: `/admin/orders/${o.id}`, value: o.totalNGN - o.paidNGN })),
   ].slice(0, 6);
 
   return (
     <>
       <PageHead
-        title="Good day, Temmie"
+        title="Good day, Koret"
         sub="Everything below is calculated live from orders, chats and the kitchen. Take an action anywhere in the back office and these numbers move."
         actions={<Link href="/admin/automations" className="inline-flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-4 text-sm font-medium text-ink hover:bg-surface-2"><Lightning size={15} weight="fill" className="text-brand" /> What the automations did</Link>}
       />
@@ -65,7 +65,7 @@ export default function Dashboard() {
           <div className="divide-y divide-line px-5 pb-3 pt-2">
             {attention.length ? attention.map((a, i) => (
               <Link key={i} href={a.href} className="flex items-center gap-3 py-2.5 text-[13.5px] hover:opacity-80">
-                <WarningCircle size={18} className={a.kind === "Needs Temmie" ? "text-brand" : "text-warn"} weight="fill" />
+                <WarningCircle size={18} className={a.kind === "Needs Koret" ? "text-brand" : "text-warn"} weight="fill" />
                 <span className="min-w-0 flex-1"><span className="block font-medium text-ink">{a.kind}</span><span className="block truncate text-xs text-ink-3">{a.text}</span></span>
                 {a.value > 0 && <span className="tnum text-[13px] font-semibold text-ink">{naira(a.value)}</span>}
               </Link>

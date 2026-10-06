@@ -1,5 +1,5 @@
 {
-  "name": "14 · Morning brief to Temmie",
+  "name": "14 · Morning brief to Koret",
   "nodes": [
     {
       "parameters": {
@@ -8,8 +8,8 @@
         "height": 180,
         "color": 5
       },
-      "id": "ba4836d8-7dee-40c0-a806-24bfc5de4a97",
-      "name": "Note 0e91",
+      "id": "8cbeefba-fb2b-4169-a5bf-757694f0485b",
+      "name": "Note f294",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "26724cca-df26-4a91-a56f-47b6df683d3a",
+      "id": "300892cf-b1e4-4f5f-ae80-708b7a2cbadc",
       "name": "Daily 07:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=day=eq.{{ $now.toFormat('yyyy-LL-dd') }}"
       },
-      "id": "0231eaf2-4590-4aa6-8384-1bef273eb99b",
+      "id": "ac80e480-3cd7-40c6-b50c-e284240c58a4",
       "name": "Daily summary view",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -88,7 +88,7 @@
           }
         }
       },
-      "id": "25483069-5376-4955-be3b-2c2f2f532724",
+      "id": "37b8e9f1-76e6-476f-ba52-5995c6783931",
       "name": "Claude: phrase the brief",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -110,7 +110,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text;\nconst d = $(\"Daily summary view\").first().json;\nreturn [{ json: { text: t && !/—|–/.test(t) ? t : `Good morning! Today: ${d.orders_today} orders (₦${d.value_today}). Balances to collect: ₦${d.balances}. Chats waiting: ${d.handoffs}. Low stock: ${d.low_stock}.`, ai_failed: !t } }];"
       },
-      "id": "9665639c-6781-4fe3-86c7-8f95e5609220",
+      "id": "f682d85f-e9b8-4ba7-9a0c-423b29a783be",
       "name": "Fallback if AI fails",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -141,8 +141,8 @@
           }
         }
       },
-      "id": "96186fba-edcd-428c-a20e-e87fcb10671e",
-      "name": "Send to Temmie",
+      "id": "bba2503c-a17f-49ea-b64c-05eb51891bbd",
+      "name": "Send to Koret",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -163,7 +163,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"daily-report\",\n  title: \"Morning brief sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 20,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "46c91eb0-e9b5-40ee-a654-9a89de1c1f31",
+      "id": "1df91cbc-2bca-4771-a6ff-00efa19dc2a8",
       "name": "Log brief",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -211,14 +211,14 @@
       "main": [
         [
           {
-            "node": "Send to Temmie",
+            "node": "Send to Koret",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send to Temmie": {
+    "Send to Koret": {
       "main": [
         [
           {

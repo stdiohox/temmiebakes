@@ -8,8 +8,8 @@
         "height": 200,
         "color": 5
       },
-      "id": "3b86be83-d258-4174-aa8a-e2ce2a65b47b",
-      "name": "Note 1ef2",
+      "id": "3ab10d73-66ef-417f-a87d-727b679c333f",
+      "name": "Note 572e",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "15e53340-c2be-47c5-af72-a269da110afe",
+      "id": "dbba24ed-3551-4223-998a-103d2cbd2cee",
       "name": "Webhook: corporate enquiry",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "82a3d2c2-20a1-454d-8bca-ddf7c9700d0d"
+      "webhookId": "ecf42ecf-da84-4dcb-9483-a4e08bf22fef"
     },
     {
       "parameters": {
         "jsCode": "const b = $json.body;\nconst PER_GUEST = { \"breakfast-box\": 7500, \"canape-reception\": 11000, \"dessert-table\": 9000, \"cake-and-cupcakes\": 4500 };\nif (!PER_GUEST[b.package_id]) return [{ json: { ...b, valid: false } }];\nconst guests = Math.max(10, Number(b.guests) || 0);\nconst total = PER_GUEST[b.package_id] * guests + (guests > 100 ? 0 : 15000);\nreturn [{ json: { ...b, guests, per_guest_ngn: PER_GUEST[b.package_id], total_ngn: total, valid: true } }];"
       },
-      "id": "b769791d-175b-476e-ada9-0c27f90923e5",
+      "id": "263c54bf-fe2b-4a68-bf4e-d59f694c886c",
       "name": "Price package",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "a1263a35-8ca9-469b-af24-9e4a994dca50",
+              "id": "91ee696f-02f3-471a-973e-46bd1f38132d",
               "leftValue": "={{ $json.valid }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "300f6e71-e618-48d8-af73-4b4b1009a3cd",
+      "id": "9af59ca4-80c1-47fd-98e6-5f81870b5488",
       "name": "Known package?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -86,7 +86,7 @@
         "responseBody": "={{ { ok: false, error: \"unknown package\" } }}",
         "options": {}
       },
-      "id": "e0dde60c-ddd8-495c-acdf-abccc3e66afe",
+      "id": "ef6d7b3d-44ba-460d-9fac-7a32c259619f",
       "name": "Respond 422",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -122,7 +122,7 @@
           }
         }
       },
-      "id": "1c020c9b-d9a4-4cdc-adff-0d04490b9288",
+      "id": "55530f93-d4b4-44ff-97d9-e721ea7e6aa4",
       "name": "Claude: proposal text",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -144,7 +144,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text ?? \"\";\nconst q = $(\"Price package\").first().json;\nconst ok = t.includes(q.total_ngn.toLocaleString(\"en-GB\")) || t.includes(String(q.total_ngn));\nreturn [{ json: { ...q, proposal: t, needs_review: !ok || /—|–/.test(t) } }];"
       },
-      "id": "95b3a262-35ef-4e04-83f7-fc41756e2933",
+      "id": "17a105a3-5fc1-4419-ad93-df90a7cdd730",
       "name": "Validate proposal",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -158,7 +158,7 @@
         "tableId": "catering_quotes",
         "dataToSend": "autoMapInputData"
       },
-      "id": "b018df20-62bf-46db-9da1-6094254aaadd",
+      "id": "9390dda9-720e-47e2-bbe4-9a67e313376f",
       "name": "Save quote",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -183,7 +183,7 @@
           },
           "conditions": [
             {
-              "id": "c646d0af-e30c-4048-9831-441d8ff6288d",
+              "id": "5068a82b-d7a8-473c-9f46-c4e5df1917ea",
               "leftValue": "={{ $json.needs_review }}",
               "rightValue": true,
               "operator": {
@@ -197,8 +197,8 @@
         },
         "options": {}
       },
-      "id": "8fb80b3c-6d18-44df-9c99-cde8bee99c26",
-      "name": "Needs Temmie's eye?",
+      "id": "122cba14-ee32-4b14-ba24-bff604c8f86c",
+      "name": "Needs Koret's eye?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
@@ -228,8 +228,8 @@
           }
         }
       },
-      "id": "4ddb8e0d-4dc0-44d0-b467-28b899efe5d9",
-      "name": "Ask Temmie to check",
+      "id": "f763f06c-dfff-443f-89ef-b07a98736a5e",
+      "name": "Ask Koret to check",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -268,7 +268,7 @@
           }
         }
       },
-      "id": "0a10f2b9-37bb-428b-9e0c-7771a4256ed4",
+      "id": "6ed9c914-6ecd-4190-b42d-916fc616fb37",
       "name": "Email proposal",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -291,7 +291,7 @@
         "amount": 3,
         "unit": "days"
       },
-      "id": "dff393d2-3eff-47fe-b5d1-cb81faf9df4d",
+      "id": "4c4321c0-4e9c-4a79-9998-ae751a6d7b29",
       "name": "Wait 3 days",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -299,7 +299,7 @@
         1920,
         -160
       ],
-      "webhookId": "a5d20bcc-30ac-4ab3-8ea6-fc7edc5c655a"
+      "webhookId": "6ecf4401-e508-4375-8755-4c5d89321076"
     },
     {
       "parameters": {
@@ -309,7 +309,7 @@
         "filterType": "string",
         "filterString": "=id=eq.{{ $(\"Save quote\").first().json.id }}"
       },
-      "id": "7e9dbf5e-78e8-4210-8741-ef61edf19a90",
+      "id": "729ec030-e7b3-470f-b5c5-98296bd8c28a",
       "name": "Quote status",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -335,7 +335,7 @@
           },
           "conditions": [
             {
-              "id": "58ff70b1-023f-479a-907c-cc7f1cfb3ea2",
+              "id": "58d1ea56-ec2e-4a02-8204-f590a67a70d6",
               "leftValue": "={{ $json.status === \"sent\" }}",
               "rightValue": true,
               "operator": {
@@ -349,7 +349,7 @@
         },
         "options": {}
       },
-      "id": "aef48408-1ba0-46bd-bb3f-f9bd516357e9",
+      "id": "3b362129-c3c0-4ca0-8f37-4826b8f4be10",
       "name": "Still open?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -380,7 +380,7 @@
           }
         }
       },
-      "id": "0c659cae-db91-42c3-a503-9cfe748d1ff5",
+      "id": "3aad3e97-7b8a-4598-86d6-c34466f64c2a",
       "name": "Follow-up email",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -400,7 +400,7 @@
     },
     {
       "parameters": {},
-      "id": "0890e2f2-92ac-41b5-aeff-f74fd080a8f6",
+      "id": "19e5e73c-4d47-49e7-9359-8953c667c214",
       "name": "Answered (accepted or declined)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -477,18 +477,18 @@
       "main": [
         [
           {
-            "node": "Needs Temmie's eye?",
+            "node": "Needs Koret's eye?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Needs Temmie's eye?": {
+    "Needs Koret's eye?": {
       "main": [
         [
           {
-            "node": "Ask Temmie to check",
+            "node": "Ask Koret to check",
             "type": "main",
             "index": 0
           }

@@ -118,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-1 rounded-full bg-surface-2 p-0.5" role="group" aria-label="Viewing as">
             {(["owner", "kitchen"] as const).map((r) => (
               <button key={r} onClick={() => setPrefs({ role: r })} aria-pressed={role === r} className={cx("rounded-full px-3 py-1 text-[12.5px] font-medium", role === r ? "bg-surface text-ink shadow-soft" : "text-ink-3")}>
-                {r === "owner" ? "Temmie (owner)" : "Kitchen team"}
+                {r === "owner" ? "Koret (owner)" : "Kitchen team"}
               </button>
             ))}
           </div>

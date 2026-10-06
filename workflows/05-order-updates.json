@@ -8,8 +8,8 @@
         "height": 200,
         "color": 4
       },
-      "id": "4fb02175-329b-4e8e-911f-faaa75f37728",
-      "name": "Note 6dbb",
+      "id": "3cd044cb-5a75-454c-9a3b-87f974cda25e",
+      "name": "Note a09c",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "77243f7a-22f4-4f6c-9854-59f061cf86c7",
+      "id": "4f4ce72f-2815-4d7d-afe3-28e762f146bc",
       "name": "Webhook: orders.status changed",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "8a0d8ebf-bf7b-4706-bc8b-51a960366a5d"
+      "webhookId": "ebbb6013-7aaf-4d8c-b65f-3f73de58b3cc"
     },
     {
       "parameters": {
         "jsCode": "const r = $json.body.record, old = $json.body.old_record ?? {};\nif (r.status === old.status) return [{ json: { skip: true } }];\nconst first = String(r.customer_name ?? \"\").split(\" \")[0] || \"there\";\nconst text = {\n  baking: `Hi ${first}, your ${r.label} is in the oven now 🎂`,\n  ready: r.fulfilment === \"pickup\" ? `Your ${r.label} is ready for pickup at our Ikeja studio.` : `Your ${r.label} is decorated and boxed. A rider will pick it up soon.`,\n  \"out-for-delivery\": `Your ${r.label} is on its way with ${r.rider_name}. ETA about ${r.eta_mins} minutes.`,\n  delivered: `Delivered! Enjoy every bite, ${first}. We'd love a photo 📸`,\n}[r.status];\nreturn [{ json: { skip: !text, status: r.status, phone: r.phone, text, order_id: r.id } }];"
       },
-      "id": "9b731004-3353-4c1c-995d-df26bfc89ac3",
+      "id": "b4eebbb0-87b1-4091-ae4e-9d903b6dd757",
       "name": "Build update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "fb3d0096-c9ee-4542-9c03-87b6a5b149f9",
+              "id": "e846d4ce-2778-4684-88fc-d09ada1cd54d",
               "leftValue": "={{ !$json.skip }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "19c07822-96d8-4fa3-8e78-96ee1b46150f",
+      "id": "0f36fff3-05a9-4b18-9379-e52d8d2c1dfd",
       "name": "Customer-facing status?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -82,7 +82,7 @@
     },
     {
       "parameters": {},
-      "id": "bf7d963e-7c67-48ed-b783-838d3a51a942",
+      "id": "57479e79-0f8c-4f47-bc5c-cb9293e8a574",
       "name": "Internal status only",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -113,7 +113,7 @@
           }
         }
       },
-      "id": "463094f9-db5f-43dc-ba24-0f29852ec1bf",
+      "id": "c746d842-71a6-44d2-b871-f305258c112f",
       "name": "WhatsApp update",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -141,7 +141,7 @@
           },
           "conditions": [
             {
-              "id": "92d31d25-1431-46bc-85ce-04a2ce2cda56",
+              "id": "74b1398d-e9d9-4739-8a5c-48013b59ba2b",
               "leftValue": "={{ $(\"Build update\").first().json.status === \"delivered\" }}",
               "rightValue": true,
               "operator": {
@@ -155,7 +155,7 @@
         },
         "options": {}
       },
-      "id": "2e39bb0e-ac21-4d24-b2a2-3e0a4aff680a",
+      "id": "4a206f57-454f-49c2-abb0-23a94dbc386a",
       "name": "Delivered?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -169,7 +169,7 @@
         "amount": 1,
         "unit": "hours"
       },
-      "id": "f5fcfc8e-2e1b-4ecb-b60c-587170eecdf7",
+      "id": "37eebc2d-bb8f-4345-8ac5-5f3eda4cbcd6",
       "name": "Wait 1 hour",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -177,7 +177,7 @@
         1200,
         -160
       ],
-      "webhookId": "30473161-a287-4e29-9dda-0cad0f396a81"
+      "webhookId": "4706d810-f539-4f72-991d-f2bf03d770f1"
     },
     {
       "parameters": {
@@ -187,7 +187,7 @@
           "waitForSubWorkflow": false
         }
       },
-      "id": "ac1fb56c-d6d5-40a3-a6b1-aad676d20c0c",
+      "id": "773ff6e8-f116-4fed-bc4a-7e65a83c23ab",
       "name": "Ask for review (07)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
@@ -200,7 +200,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"order-updates\",\n  title: `Customer told: ${$(\"Build update\").first().json.status}`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 2,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "cffc66b0-a2f8-414f-b822-25a5da67bdfe",
+      "id": "2c7d359e-474c-4d02-8df9-2beeb73e1ddb",
       "name": "Log update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -215,7 +215,7 @@
         "responseBody": "={{ { ok: true } }}",
         "options": {}
       },
-      "id": "56e35e5f-b7ba-4f6d-90ea-fba3bd5eda03",
+      "id": "9a3c2737-f51a-4e0a-9c9a-3b023ae75b1b",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,

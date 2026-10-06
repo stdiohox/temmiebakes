@@ -94,7 +94,7 @@ function Bubble({ variant, from, text, at }: { variant: ThreadVariant; from: Cha
               <Sparkle size={11} weight="fill" className="text-brand" /> Tia · AI assistant
             </>
           ) : (
-            "Temmie"
+            "Koret"
           )}
         </span>
       )}
@@ -113,7 +113,7 @@ function Bubble({ variant, from, text, at }: { variant: ThreadVariant; from: Cha
                 : "rounded-2xl rounded-bl-md bg-surface-2 text-ink",
         )}
       >
-        {wa && !mine && from === "agent" && <span className="mb-0.5 block text-[11px] font-semibold text-accent">Temmie</span>}
+        {wa && !mine && from === "agent" && <span className="mb-0.5 block text-[11px] font-semibold text-accent">Koret</span>}
         {text || " "}
         {wa && at && (
           <span className="ms-2 inline-flex translate-y-0.5 items-center gap-0.5 text-[10.5px] text-ink-3">

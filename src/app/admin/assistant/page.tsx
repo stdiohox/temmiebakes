@@ -20,7 +20,7 @@ export default function AssistantPage() {
     <>
       <PageHead
         title="Tia settings"
-        sub="Tia answers Instagram, WhatsApp and website chats in Temmie's voice. Change what she knows, what she may promise and when she hands over, then test it in the sandbox before customers see it."
+        sub="Tia answers Instagram, WhatsApp and website chats in Koret's voice. Change what she knows, what she may promise and when she hands over, then test it in the sandbox before customers see it."
       />
       <Segmented<Tab>
         className="mb-5 max-w-full overflow-x-auto"
@@ -120,7 +120,7 @@ function Behaviour() {
       </Card>
 
       <Card className="lg:col-span-2">
-        <CardHead title="When Tia hands over to Temmie" sub="If a message matches, Tia stops, tells the customer Temmie will reply and flags the chat in your inbox" />
+        <CardHead title="When Tia hands over to Koret" sub="If a message matches, Tia stops, tells the customer Koret will reply and flags the chat in your inbox" />
         <ul className="grid gap-3 p-5 md:grid-cols-2">
           {settings.handoff.map((h) => (
             <li key={h.id} className="rounded-xl border border-line p-4">
@@ -258,7 +258,7 @@ function Sandbox() {
           {conv.messages.map((m) => (
             <p key={m.id} className={cx("max-w-[85%] whitespace-pre-line rounded-2xl px-3.5 py-2.5 text-[13.5px]", m.from === "user" ? "self-end bg-brand text-brand-ink" : "self-start bg-surface text-ink shadow-soft")}>{m.text}</p>
           ))}
-          {conv.status === "handoff" && <p className="self-center rounded-full bg-warn-soft px-3 py-1 text-xs text-warn">Handed to Temmie · {last?.handoff}</p>}
+          {conv.status === "handoff" && <p className="self-center rounded-full bg-warn-soft px-3 py-1 text-xs text-warn">Handed to Koret · {last?.handoff}</p>}
         </div>
         <form onSubmit={(e) => { e.preventDefault(); ask(text); }} className="flex gap-2 border-t border-line p-3">
           <label htmlFor="sandbox-input" className="sr-only">Test message</label>

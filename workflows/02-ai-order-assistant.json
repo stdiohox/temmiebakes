@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Tia, the 24/7 order assistant\n- **Gemini** classifies intent and extracts slots (size, flavour, date, Lagos area, guests, name, phone). Understands Pidgin.\n- **Handoff rules run before any reply**: complaints, discounts, 'talk to Temmie', wedding cakes, orders over ₦500k.\n- **Claude** writes the reply in Temmie's voice using ONLY the price book, knowledge base and live capacity.\n- A guardrail checks prices and promises before sending.\n- When all slots are filled, the order goes to intake (01).",
+        "content": "## Tia, the 24/7 order assistant\n- **Gemini** classifies intent and extracts slots (size, flavour, date, Lagos area, guests, name, phone). Understands Pidgin.\n- **Handoff rules run before any reply**: complaints, discounts, 'talk to Koret', wedding cakes, orders over ₦500k.\n- **Claude** writes the reply in Koret's voice using ONLY the price book, knowledge base and live capacity.\n- A guardrail checks prices and promises before sending.\n- When all slots are filled, the order goes to intake (01).",
         "width": 680,
         "height": 260,
         "color": 6
       },
-      "id": "5323bfaa-0302-4f42-95b2-fe064bfd0ea9",
-      "name": "Note 54f0",
+      "id": "f7778611-f88a-48af-ac1e-e48c5f831efb",
+      "name": "Note d239",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "1c6bbd5f-f4db-4561-9f95-4456117580d6",
+      "id": "f90b18af-41fa-4595-8b0a-f7e9cefc2f63",
       "name": "Webhook: Instagram DMs",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,7 +32,7 @@
         0,
         0
       ],
-      "webhookId": "e79fbdd3-bcc4-4b87-a7c1-d78c5da71e26"
+      "webhookId": "39ae2a98-16cc-436c-9319-46883947ab7e"
     },
     {
       "parameters": {
@@ -41,7 +41,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "6cf3e43a-eabd-4fdc-9b64-8bcd585441bf",
+      "id": "12828f7a-8a9b-474b-a768-e2a4877b1152",
       "name": "Webhook: WhatsApp Cloud API",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -49,7 +49,7 @@
         0,
         200
       ],
-      "webhookId": "cf5acbf8-211a-4ec5-87d2-ad1e85e44d54"
+      "webhookId": "60d786d8-c30c-46cb-a66e-964a20174328"
     },
     {
       "parameters": {
@@ -58,7 +58,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "c955a6e1-d58e-463e-9375-db8dca46513b",
+      "id": "6b79aa87-e95e-4d37-8ef2-041cf7754a56",
       "name": "Webhook: website chat",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -66,13 +66,13 @@
         0,
         400
       ],
-      "webhookId": "3f167329-9a2a-477c-85d3-a7d3c5dfa6e5"
+      "webhookId": "25116c3b-8cc9-4c87-a484-64540dbeff05"
     },
     {
       "parameters": {
         "jsCode": "return $input.all().map(({ json: j }) => {\n  const b = j.body ?? {};\n  const waMsg = b.entry?.[0]?.changes?.[0]?.value?.messages?.[0];\n  const igMsg = b.entry?.[0]?.messaging?.[0];\n  return { json: { channel: waMsg ? \"whatsapp\" : igMsg ? \"instagram\" : \"web\", sender: waMsg?.from ?? igMsg?.sender?.id ?? b.visitor_id, text: waMsg?.text?.body ?? igMsg?.message?.text ?? b.text ?? \"\" } };\n}).filter((i) => i.json.text);"
       },
-      "id": "2a2a9594-61ee-413a-8a12-0a0c2fc7744c",
+      "id": "98f6606f-93e0-4c4f-a90b-a96bdd6e7a9d",
       "name": "Normalise message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -89,7 +89,7 @@
         "filterType": "string",
         "filterString": "=sender=eq.{{ $json.sender }}"
       },
-      "id": "5edb1616-b1bc-4ebf-9ed7-c7dc14e8cae9",
+      "id": "381220d9-d3bb-4bd6-b3e5-a830cb3ed1ef",
       "name": "Load conversation & draft",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -115,7 +115,7 @@
           },
           "conditions": [
             {
-              "id": "ac9595b2-69df-49ea-9c7b-a89bdbea407c",
+              "id": "fdb89414-13af-4d8b-8708-7993b15eaa51",
               "leftValue": "={{ $json.status === \"staff\" || $json.status === \"handoff\" }}",
               "rightValue": true,
               "operator": {
@@ -129,8 +129,8 @@
         },
         "options": {}
       },
-      "id": "7d9894cb-1228-4010-b149-7b0220c0df55",
-      "name": "Temmie already handling?",
+      "id": "77499885-2f31-4292-badb-8f05f2ee1d77",
+      "name": "Koret already handling?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
       "position": [
@@ -140,8 +140,8 @@
     },
     {
       "parameters": {},
-      "id": "bbc9af05-1c5f-4408-86f6-5866ca376ca6",
-      "name": "Done: left for Temmie (no AI reply)",
+      "id": "a658928f-0113-4dee-a8fe-ec8b0b915a2e",
+      "name": "Done: left for Koret (no AI reply)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
@@ -171,7 +171,7 @@
           }
         }
       },
-      "id": "f67d0ead-da61-4442-820d-1cac6887f6c4",
+      "id": "df014b4c-33e0-4766-9029-88ebe9e65047",
       "name": "Gemini: classify & extract",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -193,7 +193,7 @@
       "parameters": {
         "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"intent\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
       },
-      "id": "278b417c-81af-4338-9e97-8643c2ba68f9",
+      "id": "29b6cbfa-f10f-47d3-a192-44408417fccd",
       "name": "Validate classification",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -206,7 +206,7 @@
       "parameters": {
         "jsCode": "const draft = { ...($(\"Load conversation & draft\").first().json.draft ?? {}) };\nconst a = $json.ai ?? {};\nfor (const [k, val] of Object.entries(a)) if (val !== null && k !== \"intent\") draft[k] = val;\nconst settings = $vars.TIA_HANDOFF ? JSON.parse($vars.TIA_HANDOFF) : [];\nconst text = $(\"Normalise message\").first().json.text.toLowerCase();\nconst hit = settings.find((h) => h.enabled && h.keywords.some((k) => text.includes(k)));\nconst handoff = $json.needs_review ? \"Could not understand the message\" : hit?.label ?? ([\"complaint\", \"discount\", \"human\", \"wedding\"].includes(a.intent) ? a.intent : null);\nconst missing = [\"size_inches\", \"flavour\", \"date\", \"area\", \"name\", \"phone\"].filter((k) => a.intent === \"order\" && !draft[k]);\nreturn [{ json: { ...$(\"Normalise message\").first().json, intent: a.intent ?? \"other\", draft, handoff, missing, ready: a.intent === \"order\" && missing.length === 0 } }];"
       },
-      "id": "57b509ee-02d1-40a2-b606-3013ca8de7e2",
+      "id": "ccd19180-b737-40c0-ac97-3b05d4e0c7a3",
       "name": "Merge draft & apply handoff rules",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -228,7 +228,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "4f6bfc54-e7b5-4d05-8710-a1461c5f399b",
+                    "id": "d35ccd65-dda7-466f-9ddc-4e52133bf7b4",
                     "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
                     "rightValue": "handoff",
                     "operator": {
@@ -251,7 +251,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "ca702020-0776-44bb-b067-7dcdbb43625b",
+                    "id": "dbe4e54e-60d8-49fc-b347-a5e23413eb72",
                     "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
                     "rightValue": "order",
                     "operator": {
@@ -274,7 +274,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "79f71f27-73bf-4af2-a75d-23ee1db81af4",
+                    "id": "d3faf584-9aa6-4542-aef2-d978c87bcf55",
                     "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
                     "rightValue": "track",
                     "operator": {
@@ -297,7 +297,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "60a8a82d-d9d1-4ced-b2ca-92bb48f15c66",
+                    "id": "7b9ec456-41b8-4e85-bf13-d19f831b5a77",
                     "leftValue": "={{ $json.handoff ? \"handoff\" : $json.ready ? \"order\" : $json.intent === \"track\" ? \"track\" : \"reply\" }}",
                     "rightValue": "reply",
                     "operator": {
@@ -318,7 +318,7 @@
           "renameFallbackOutput": "unknown"
         }
       },
-      "id": "87045e4c-870f-4e7b-8553-1523dda42ab0",
+      "id": "ab23569a-7e40-4d48-a598-c7f1ee05d10e",
       "name": "Route",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -329,9 +329,9 @@
     },
     {
       "parameters": {
-        "jsCode": "return [{ json: { ...$json, reply: \"Thank you! I'm passing this to Temmie personally and she'll reply here shortly.\", status: \"handoff\" } }];"
+        "jsCode": "return [{ json: { ...$json, reply: \"Thank you! I'm passing this to Koret personally and she'll reply here shortly.\", status: \"handoff\" } }];"
       },
-      "id": "e47526fe-6a7d-43d4-8bd0-144cfd4f0a29",
+      "id": "24388736-41fa-400e-8516-4a8dfa9e2fa0",
       "name": "Handoff message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -362,8 +362,8 @@
           }
         }
       },
-      "id": "bd2759e5-0f43-497f-b295-ba28474c3588",
-      "name": "Alert Temmie: chat needs you",
+      "id": "28bce0dd-558f-4ff1-af93-3b22d880f154",
+      "name": "Alert Koret: chat needs you",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -388,7 +388,7 @@
           "waitForSubWorkflow": false
         }
       },
-      "id": "cc09774f-f757-4de4-bbb8-f6b816f3435d",
+      "id": "ce90754d-7eb2-4ee7-9ec7-9f8dbfe78dc4",
       "name": "Create order via intake (01)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
@@ -405,7 +405,7 @@
         "filterType": "string",
         "filterString": "=number=eq.{{ $json.draft.order_number }}"
       },
-      "id": "bbba7d85-efbb-436a-a30f-b9c0e8963059",
+      "id": "7f8e6389-1847-4f4a-b5bc-ea7d22c67a87",
       "name": "Look up order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -429,7 +429,7 @@
         "filterType": "string",
         "filterString": "=approved=eq.true"
       },
-      "id": "011e503b-17c6-4319-80d1-2a4e6d53aeeb",
+      "id": "be383aef-9972-49fe-9655-463ee5b27203",
       "name": "Approved knowledge & price book",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -472,7 +472,7 @@
           }
         }
       },
-      "id": "1979893c-b27c-45c7-9b19-d8215980403b",
+      "id": "2a0cb8ad-fdc8-4cf7-829b-04fcd1acb636",
       "name": "Claude: write Tia's reply",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -492,9 +492,9 @@
     },
     {
       "parameters": {
-        "jsCode": "// Block replies that invent prices or promise discounts; send them to Temmie instead.\nconst text = $json.content?.[0]?.text ?? \"\";\nconst book = $(\"Approved knowledge & price book\").all().map((i) => JSON.stringify(i.json)).join(\" \");\nconst prices = (text.match(/₦\\s?[\\d,]+/g) ?? []).map((p) => p.replace(/[^\\d]/g, \"\"));\nconst invented = prices.filter((p) => !book.includes(p));\nconst bad = !text || /discount|free cake|guarantee/i.test(text) || invented.length > 0 || /—|–/.test(text);\nreturn [{ json: { ...$(\"Merge draft & apply handoff rules\").first().json, reply: bad ? null : text, status: bad ? \"handoff\" : \"ai\", guard_reason: bad ? (invented.length ? \"Price not in price book: \" + invented.join(\", \") : \"Reply failed guardrail\") : null } }];"
+        "jsCode": "// Block replies that invent prices or promise discounts; send them to Koret instead.\nconst text = $json.content?.[0]?.text ?? \"\";\nconst book = $(\"Approved knowledge & price book\").all().map((i) => JSON.stringify(i.json)).join(\" \");\nconst prices = (text.match(/₦\\s?[\\d,]+/g) ?? []).map((p) => p.replace(/[^\\d]/g, \"\"));\nconst invented = prices.filter((p) => !book.includes(p));\nconst bad = !text || /discount|free cake|guarantee/i.test(text) || invented.length > 0 || /—|–/.test(text);\nreturn [{ json: { ...$(\"Merge draft & apply handoff rules\").first().json, reply: bad ? null : text, status: bad ? \"handoff\" : \"ai\", guard_reason: bad ? (invented.length ? \"Price not in price book: \" + invented.join(\", \") : \"Reply failed guardrail\") : null } }];"
       },
-      "id": "8c79532f-f526-4c63-a109-db370b3055f2",
+      "id": "2c7436a7-4892-4265-8e1b-a830bd9c8ca7",
       "name": "Guardrail check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -513,7 +513,7 @@
           },
           "conditions": [
             {
-              "id": "e565eb6b-5f7c-460d-a3a1-f9d351bfbaf7",
+              "id": "f5daa055-b7a3-4986-8243-02816556e95c",
               "leftValue": "={{ $json.reply !== null }}",
               "rightValue": true,
               "operator": {
@@ -527,7 +527,7 @@
         },
         "options": {}
       },
-      "id": "45eb0b00-a09a-4bb3-8f53-8a8d1823bcb9",
+      "id": "7afb963d-5adc-4ed5-a9a9-2b785fd424b4",
       "name": "Guardrail passed?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -558,8 +558,8 @@
           }
         }
       },
-      "id": "3c69bb8d-98ce-4ef8-8f52-ddb3ac42c57c",
-      "name": "Alert Temmie: reply blocked",
+      "id": "852db836-3020-40d3-89bc-101674fedf9e",
+      "name": "Alert Koret: reply blocked",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -589,7 +589,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "1c3bfd42-199f-47df-8934-6a9236802668",
+                    "id": "9a684b05-f126-4e99-85de-c4c1c8198e71",
                     "leftValue": "={{ $json.channel }}",
                     "rightValue": "whatsapp",
                     "operator": {
@@ -612,7 +612,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "2fb916a3-7255-4f5c-9749-72da2ba50c4c",
+                    "id": "c53249ee-bf3a-497b-9cab-ce417b9c13b9",
                     "leftValue": "={{ $json.channel }}",
                     "rightValue": "instagram",
                     "operator": {
@@ -635,7 +635,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "51939cd1-1e59-4a11-9488-169fb0dbe051",
+                    "id": "684fe79b-3808-4723-b69c-6d34db2ac0d3",
                     "leftValue": "={{ $json.channel }}",
                     "rightValue": "web",
                     "operator": {
@@ -656,7 +656,7 @@
           "renameFallbackOutput": "unknown"
         }
       },
-      "id": "43d4ca95-4558-4340-a215-7d1355e07599",
+      "id": "024225bf-e8a2-49b9-aee3-ef4b624b1474",
       "name": "Reply channel",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -687,7 +687,7 @@
           }
         }
       },
-      "id": "5b5acb91-a537-428b-9999-95a34634a17e",
+      "id": "e254bc53-d711-4a31-92fd-8313da39615c",
       "name": "Send on WhatsApp",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -727,7 +727,7 @@
           }
         }
       },
-      "id": "b4ae977c-0ee9-4698-b36d-74e8275097fd",
+      "id": "123b48aa-7de4-4226-97e4-bf248403666d",
       "name": "Send on Instagram",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -751,7 +751,7 @@
         "responseBody": "={{ { reply: $json.reply } }}",
         "options": {}
       },
-      "id": "89b22c33-dc23-484e-bd99-18172df65df0",
+      "id": "288836f1-ef4a-49bc-8d14-8fdfe0d57975",
       "name": "Reply to website chat",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -762,7 +762,7 @@
     },
     {
       "parameters": {},
-      "id": "1611c7d1-2140-41a1-973c-c5ea48342cc5",
+      "id": "0b750f3f-2ba4-468c-8e11-37fae8f0da73",
       "name": "Unknown channel (flag)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -775,7 +775,7 @@
       "parameters": {
         "jsCode": "const m = $(\"Merge draft & apply handoff rules\").first().json;\nreturn [{ json: { sender: m.sender, channel: m.channel, draft: m.draft, status: $json.status ?? \"ai\", last_at: new Date().toISOString() } }];"
       },
-      "id": "84c7bb26-1724-47fa-9426-2f01f2791050",
+      "id": "c6964431-7dae-481e-83d6-7a8a0017760f",
       "name": "Conversation update",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -790,7 +790,7 @@
         "tableId": "conversations",
         "dataToSend": "autoMapInputData"
       },
-      "id": "798298df-f673-4f55-b345-c99e13fe8bed",
+      "id": "38494f60-21fc-460e-8f7b-a080f772b258",
       "name": "Upsert conversation",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -809,7 +809,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"ai-assistant\",\n  title: `Tia replied (${$(\"Merge draft & apply handoff rules\").first().json.intent})`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 3,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "f5e034b1-0b1b-4c1b-a502-2c0f9f64cf8d",
+      "id": "a68f0cb3-ff8a-4937-9826-b6599c331d86",
       "name": "Log Tia event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -823,7 +823,7 @@
         "tableId": "automation_events",
         "dataToSend": "autoMapInputData"
       },
-      "id": "37d0fdec-4dcf-4330-944e-1b01efa53c8e",
+      "id": "f472c66c-81dd-4aa2-8490-ffe3bdb177ac",
       "name": "Write automation_events",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -840,7 +840,7 @@
     },
     {
       "parameters": {},
-      "id": "0c939e1f-9414-4c01-aa52-7d864c88cbb7",
+      "id": "f99a8301-5bb4-4116-b9b1-757361ce1db8",
       "name": "Unknown route (flag for review)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -899,18 +899,18 @@
       "main": [
         [
           {
-            "node": "Temmie already handling?",
+            "node": "Koret already handling?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Temmie already handling?": {
+    "Koret already handling?": {
       "main": [
         [
           {
-            "node": "Done: left for Temmie (no AI reply)",
+            "node": "Done: left for Koret (no AI reply)",
             "type": "main",
             "index": 0
           }
@@ -1000,7 +1000,7 @@
       "main": [
         [
           {
-            "node": "Alert Temmie: chat needs you",
+            "node": "Alert Koret: chat needs you",
             "type": "main",
             "index": 0
           },
@@ -1012,7 +1012,7 @@
         ]
       ]
     },
-    "Alert Temmie: chat needs you": {
+    "Alert Koret: chat needs you": {
       "main": [
         [
           {
@@ -1078,14 +1078,14 @@
         ],
         [
           {
-            "node": "Alert Temmie: reply blocked",
+            "node": "Alert Koret: reply blocked",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Alert Temmie: reply blocked": {
+    "Alert Koret: reply blocked": {
       "main": [
         [
           {

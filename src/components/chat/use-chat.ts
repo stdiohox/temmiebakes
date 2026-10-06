@@ -9,7 +9,7 @@ import { useDemo } from "@/lib/store";
 /**
  * Drives one conversation: customer message → simulated thinking → streamed reply
  * from Tia with all side effects (customer, order, class seat, catering quote, handoff).
- * After a handoff Temmie replies, so the story never dead-ends.
+ * After a handoff Koret replies, so the story never dead-ends.
  */
 export function useChat(convId: string | undefined) {
   const [typing, setTyping] = useState<"ai" | "agent" | null>(null);
@@ -64,7 +64,7 @@ export function useChat(convId: string | undefined) {
           setTyping(null);
           if (!useDemo.getState().conversations.some((c) => c.id === convId)) return;
           const first = cv.name.split(" ")[0];
-          run((s) => staffMessage(s, convId, `Hi ${/visitor|guest/i.test(first) ? "there" : first}, Temmie here! I've read your chat with Tia. Let me sort this out for you personally.`));
+          run((s) => staffMessage(s, convId, `Hi ${/visitor|guest/i.test(first) ? "there" : first}, Koret here! I've read your chat with Tia. Let me sort this out for you personally.`));
         }
       } finally {
         busy.current = false;

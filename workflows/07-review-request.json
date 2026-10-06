@@ -3,13 +3,13 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Reviews\nCalled an hour after delivery. Asks for a 1-5 rating on WhatsApp (6h timeout). 4-5 stars: thank you + Google review link. 1-3 stars: Gemini summarises the issue, Temmie is alerted and the customer hears back personally. Never auto-replies to a complaint.",
+        "content": "## Reviews\nCalled an hour after delivery. Asks for a 1-5 rating on WhatsApp (6h timeout). 4-5 stars: thank you + Google review link. 1-3 stars: Gemini summarises the issue, Koret is alerted and the customer hears back personally. Never auto-replies to a complaint.",
         "width": 620,
         "height": 200,
         "color": 5
       },
-      "id": "f007b642-d7b4-46f1-adc7-5b4ee958fcd5",
-      "name": "Note c041",
+      "id": "48315fae-e0ef-415e-a6b4-f92c1e30caeb",
+      "name": "Note ae76",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -21,7 +21,7 @@
       "parameters": {
         "inputSource": "passthrough"
       },
-      "id": "d9f72450-362d-4e93-80d2-364cf908f08b",
+      "id": "aad1f823-2cc6-4135-b284-c353d5cb978a",
       "name": "Called by order updates (05)",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -47,7 +47,7 @@
           }
         }
       },
-      "id": "5e19e890-4333-4339-84a0-3be4ba9c5b4d",
+      "id": "c75ed0f2-d354-4c03-801f-7db199063930",
       "name": "Ask for rating (WhatsApp, wait 6h)",
       "type": "n8n-nodes-base.whatsApp",
       "typeVersion": 1,
@@ -61,13 +61,13 @@
           "name": "REPLACE: WhatsApp Cloud API token"
         }
       },
-      "webhookId": "0deaa37b-9e8e-46e4-87b3-7d9811d123f1"
+      "webhookId": "fadf23be-8717-486b-bc81-a1d268959a17"
     },
     {
       "parameters": {
         "jsCode": "const raw = String($json.data?.text ?? \"\");\nconst n = Number((raw.match(/[1-5]/) ?? [])[0]);\nreturn [{ json: { order_id: $(\"Called by order updates (05)\").first().json.order_id, phone: $(\"Called by order updates (05)\").first().json.phone, rating: n || null, comment: raw, answered: Boolean(raw) } }];"
       },
-      "id": "2fcdd3a6-a200-4a77-96af-7c63bb52da72",
+      "id": "dad21da2-08ea-4a51-9129-ed2d65ab96a0",
       "name": "Parse rating",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -89,7 +89,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "f7f8a421-a400-4e8f-a6db-d9fbb1f31960",
+                    "id": "b64ce4a5-27dd-4143-97bd-2327dc3426bd",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "happy",
                     "operator": {
@@ -112,7 +112,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "811ecea6-b1f6-4c68-9a62-7eb7de3d47e3",
+                    "id": "cec4a799-7d1e-4c7b-b1fc-80aa5f399737",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "unhappy",
                     "operator": {
@@ -135,7 +135,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "7c99c155-625d-48e2-bae7-707258eebeea",
+                    "id": "6d3b85e9-1d28-446d-abbb-ba3323cd22e6",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "unclear",
                     "operator": {
@@ -158,7 +158,7 @@
                 },
                 "conditions": [
                   {
-                    "id": "36be44ec-b25a-4057-bff3-8017e6c875f4",
+                    "id": "96cabd40-2138-49cd-9426-8524d23200ca",
                     "leftValue": "={{ !$json.answered ? \"none\" : $json.rating >= 4 ? \"happy\" : $json.rating ? \"unhappy\" : \"unclear\" }}",
                     "rightValue": "none",
                     "operator": {
@@ -179,7 +179,7 @@
           "renameFallbackOutput": "unknown"
         }
       },
-      "id": "4cbb36d9-1cf7-4c5b-9871-cf5f0f60f97b",
+      "id": "5eed528d-d63c-47b4-9274-c8257e40c32c",
       "name": "Route by rating",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -210,7 +210,7 @@
           }
         }
       },
-      "id": "511c3d0b-6669-48f1-abad-ac42b1502ded",
+      "id": "2d21b387-9c38-444e-9db8-f316b7bd84bd",
       "name": "Thank you + Google link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -250,7 +250,7 @@
           }
         }
       },
-      "id": "e3373a60-5ed4-45e0-8fa7-dfb4af3f972a",
+      "id": "f7799983-8c4d-4bd0-88f6-1bde7815f26a",
       "name": "Gemini: summarise complaint",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -272,7 +272,7 @@
       "parameters": {
         "jsCode": "// Parse model JSON and validate. Anomalies are FLAGGED for review, never silently defaulted.\nconst out = [];\nfor (const item of $input.all()) {\n  const raw = item.json.candidates?.[0]?.content?.parts?.[0]?.text;\n  let parsed = null, anomaly = null;\n  try {\n    const text = String(raw ?? \"\").replace(/^\\s*```(json)?/i, \"\").replace(/```\\s*$/, \"\").trim();\n    parsed = JSON.parse(text);\n  } catch (e) {\n    anomaly = \"AI output was not valid JSON\";\n  }\n  const missing = parsed ? [\"summary\",\"issue\"].filter((k) => !(k in parsed)) : [];\n  if (!anomaly && missing.length) anomaly = \"AI output missing fields: \" + missing.join(\", \");\n  out.push({ json: { ...item.json, ai: parsed ?? {}, ai_anomaly: anomaly, needs_review: Boolean(anomaly) } });\n}\nreturn out;"
       },
-      "id": "548568f1-f5e1-4318-9fe6-73d7c6c7d5a3",
+      "id": "c556d3c8-ce72-453c-88d4-cbd2850c3d65",
       "name": "Validate summary",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -303,8 +303,8 @@
           }
         }
       },
-      "id": "4c5252d8-3b16-465e-871a-4d498ec3b728",
-      "name": "Alert Temmie",
+      "id": "f73d07f5-81d6-4dc3-8e82-ae3a2d1df855",
+      "name": "Alert Koret",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
@@ -333,7 +333,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Parse rating\").first().json.phone, type: \"text\", text: { body: \"I am so sorry to hear that. Temmie has your message and will call you today to make it right.\" } }) }}",
+        "jsonBody": "={{ JSON.stringify({ messaging_product: \"whatsapp\", to: $(\"Parse rating\").first().json.phone, type: \"text\", text: { body: \"I am so sorry to hear that. Koret has your message and will call you today to make it right.\" } }) }}",
         "options": {
           "timeout": 30000,
           "response": {
@@ -343,7 +343,7 @@
           }
         }
       },
-      "id": "b6598f4d-fae0-4dd1-b381-fe5e990ee501",
+      "id": "7e8d2871-b139-467a-8aba-8e90ce32844f",
       "name": "Personal holding reply",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -363,7 +363,7 @@
     },
     {
       "parameters": {},
-      "id": "c4c14d67-e15c-457b-a80a-818b04b773aa",
+      "id": "fa4ee884-b4e6-47b6-9b39-1d524dca2427",
       "name": "Unclear reply: saved, no action",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -374,7 +374,7 @@
     },
     {
       "parameters": {},
-      "id": "af81a81a-8adc-4b1d-a746-8165ab784b8c",
+      "id": "7d9c6c47-df38-4f1f-b6d4-1e1fe9bf766b",
       "name": "No reply in 6h",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -388,7 +388,7 @@
         "tableId": "reviews",
         "dataToSend": "autoMapInputData"
       },
-      "id": "eb45effc-27d7-45b5-98d6-e2f711cd5dc3",
+      "id": "cd6b1e47-f416-4c51-b544-70be93fc4342",
       "name": "Save review",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -405,7 +405,7 @@
     },
     {
       "parameters": {},
-      "id": "361e8d38-f280-4fea-9d64-2dad3373d6ae",
+      "id": "dc74306f-636d-4a1c-8786-5a3baf1c21a5",
       "name": "Unknown route (flag for review)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -503,14 +503,14 @@
       "main": [
         [
           {
-            "node": "Alert Temmie",
+            "node": "Alert Koret",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Alert Temmie": {
+    "Alert Koret": {
       "main": [
         [
           {

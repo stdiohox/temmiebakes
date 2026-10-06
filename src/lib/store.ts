@@ -81,7 +81,7 @@ export const useDemo = create<DemoStore>()(
       },
     })),
     {
-      name: "koretbakes-demo",
+      name: "koretbakes-v2",
       version: 1,
       storage: createJSONStorage(() => debouncedLocalStorage),
       skipHydration: true,

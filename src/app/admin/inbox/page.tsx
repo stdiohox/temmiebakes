@@ -131,7 +131,7 @@ function StatusPill({ status }: { status: Conversation["status"] }) {
 function ConvPane({ conv, onBack }: { conv: Conversation; onBack: () => void }) {
   const run = useDemo((s) => s.run);
   const { send, typing, freshId } = useChat(conv.id);
-  const [as, setAs] = useState<"customer" | "temmie">(conv.status === "ai" ? "customer" : "temmie");
+  const [as, setAs] = useState<"customer" | "koret">(conv.status === "ai" ? "customer" : "koret");
   const [text, setText] = useState("");
   const Ch = CONV_CHANNEL[conv.channel];
 
@@ -153,7 +153,7 @@ function ConvPane({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
     if (as === "customer") void send(t);
     else {
       run((s) => staffMessage(s, conv.id, t));
-      toast("Sent as Temmie", `${Ch.label} · ${conv.name}`, "ok");
+      toast("Sent as Koret", `${Ch.label} · ${conv.name}`, "ok");
     }
   };
 
@@ -163,10 +163,10 @@ function ConvPane({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
       if (c) {
         c.status = "staff";
         c.unread = 0;
-        c.messages.push({ id: `m-${c.messages.length}-${c.id}`, from: "system", text: "Temmie took over the chat", at: new Date().toISOString() });
+        c.messages.push({ id: `m-${c.messages.length}-${c.id}`, from: "system", text: "Koret took over the chat", at: new Date().toISOString() });
       }
     });
-    setAs("temmie");
+    setAs("koret");
   };
   const handBack = () => {
     run((s) => {
@@ -212,7 +212,7 @@ function ConvPane({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
           <span className="text-ink-3">Type as</span>
           <div className="flex items-center gap-1 rounded-full bg-surface-2 p-0.5" role="group" aria-label="Send as">
             <button onClick={() => setAs("customer")} aria-pressed={as === "customer"} className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium", as === "customer" ? "bg-surface text-ink shadow-soft" : "text-ink-3")}><UserCircle size={14} /> Customer (demo)</button>
-            <button onClick={() => setAs("temmie")} aria-pressed={as === "temmie"} className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium", as === "temmie" ? "bg-surface text-ink shadow-soft" : "text-ink-3")}><CheckCircle size={14} /> Temmie</button>
+            <button onClick={() => setAs("koret")} aria-pressed={as === "koret"} className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-medium", as === "koret" ? "bg-surface text-ink shadow-soft" : "text-ink-3")}><CheckCircle size={14} /> Koret</button>
           </div>
           <span className="flex-1" />
           <button onClick={() => review("approved")} className={cx("inline-flex items-center gap-1 rounded-full px-2 py-1", conv.review === "approved" ? "bg-ok-soft text-ok" : "text-ink-3 hover:bg-surface-2")}><CheckCircle size={14} /> Good answer</button>
@@ -224,7 +224,7 @@ function ConvPane({ conv, onBack }: { conv: Conversation; onBack: () => void }) 
             id="inbox-composer"
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder={as === "customer" ? `Write as ${conv.name.split(" ")[0]}, Tia will reply` : "Reply as Temmie"}
+            placeholder={as === "customer" ? `Write as ${conv.name.split(" ")[0]}, Tia will reply` : "Reply as Koret"}
             className="h-11 min-w-0 flex-1 rounded-full border border-line-strong bg-surface px-4 text-sm text-ink outline-none placeholder:text-ink-3 focus:border-brand"
           />
           <button type="submit" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-brand text-brand-ink active:scale-95" aria-label="Send"><PaperPlaneRight size={18} weight="fill" /></button>

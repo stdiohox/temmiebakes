@@ -78,7 +78,7 @@ export const PRODUCTS: Product[] = ROWS.map(([name, category, priceNGN, unit, im
 }));
 
 export const STAFF: Staff[] = [
-  { id: "st-temmie", name: "Temmie", initials: "TM", role: "Founder & head baker", hue: 335, kind: "owner" },
+  { id: "st-koret", name: "Koret", initials: "KO", role: "Founder & head baker", hue: 335, kind: "owner" },
   { id: "st-bisola", name: "Bisola Adeyemi", initials: "BA", role: "Kitchen lead", hue: 20, kind: "kitchen" },
   { id: "st-ope", name: "Ope Okafor", initials: "OO", role: "Cake decorator", hue: 280, kind: "kitchen" },
   { id: "st-kunle", name: "Kunle Bello", initials: "KB", role: "Baker", hue: 45, kind: "kitchen" },
@@ -165,7 +165,7 @@ export const ASSISTANT: AssistantSettings = {
   handoff: [
     { id: "h1", label: "Complaint or refund", keywords: ["complain", "complaint", "refund", "disappointed", "not happy", "spoilt", "melted", "late"], enabled: true },
     { id: "h2", label: "Discount or price negotiation", keywords: ["discount", "reduce", "last price", "too expensive", "cheaper", "abeg reduce"], enabled: true },
-    { id: "h3", label: "Wants to speak to Temmie", keywords: ["speak to temmie", "talk to temmie", "human", "real person", "call me", "owner"], enabled: true },
+    { id: "h3", label: "Wants to speak to Koret", keywords: ["speak to koret", "talk to koret", "human", "real person", "call me", "owner"], enabled: true },
     { id: "h4", label: "Wedding cake consultation", keywords: ["wedding cake", "wedding", "tasting"], enabled: true },
     { id: "h5", label: "Very large order (over ₦500k)", keywords: [], enabled: true },
   ],
@@ -180,7 +180,7 @@ export const AUTOMATIONS: Automation[] = [
   { id: "occasion-reminders", name: "Birthday & anniversary reminders", trigger: "Saved occasion is 14 days away", action: "Personal offer to re-order, with last year's cake photo", channel: "whatsapp", active: true, template: "Hi {{firstName}}! {{occasion}} is on {{date}}. Shall we bake something special again? Order this week and get free delivery.", file: "06-occasion-reminders.json" },
   { id: "review-request", name: "Review & photo request", trigger: "Delivered + 1 day", action: "Ask for a rating and a party photo to repost", channel: "whatsapp", active: true, template: "Hi {{firstName}}, we hope the {{item}} was a hit! Could you rate it 1-5 and share a photo for our page?", file: "07-review-request.json" },
   { id: "reorder-nudge", name: "Re-order nudge", trigger: "No order in 45 days (treats customers)", action: "New flavours of the week + one-tap re-order", channel: "instagram", active: true, template: "Hi {{firstName}}, your favourite {{item}} is back this week, plus new honey cake slices. Reply YES to re-order.", file: "08-reorder-nudge.json" },
-  { id: "capacity-guard", name: "Kitchen capacity guard", trigger: "Day reaches 85% of oven capacity", action: "Assistant offers next free date; alert Temmie", channel: "internal", active: true, template: "", file: "09-capacity-guard.json" },
+  { id: "capacity-guard", name: "Kitchen capacity guard", trigger: "Day reaches 85% of oven capacity", action: "Assistant offers next free date; alert Koret", channel: "internal", active: true, template: "", file: "09-capacity-guard.json" },
   { id: "stock-reorder", name: "Ingredient re-order", trigger: "Stock below re-order level", action: "Draft purchase order and WhatsApp the supplier", channel: "internal", active: true, template: "", file: "10-stock-reorder.json" },
   { id: "academy", name: "Academy enrolment & reminders", trigger: "Class enquiry or booking", action: "Seat hold, payment link, class reminders, certificate", channel: "whatsapp", active: true, template: "Hi {{firstName}}, your seat for {{course}} on {{date}} is confirmed. Bring an apron and an appetite!", file: "11-academy.json" },
   { id: "corporate", name: "Corporate catering quotes", trigger: "Corporate enquiry", action: "Package quote PDF, follow-up, monthly re-order", channel: "email", active: true, template: "", file: "12-corporate-catering.json" },

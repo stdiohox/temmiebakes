@@ -220,7 +220,7 @@ function Queue() {
   });
   const approve = (c: ContentDraft) => {
     update(c.id, (x) => void (x.status = "approved"));
-    run((s) => logEvent(s, { automation: "content", kind: "action", title: "Content approved by Temmie", detail: c.title, minutesSaved: 1 }));
+    run((s) => logEvent(s, { automation: "content", kind: "action", title: "Content approved by Koret", detail: c.title, minutesSaved: 1 }));
     toast("Approved", c.title);
   };
   const openSchedule = (c: ContentDraft) => {

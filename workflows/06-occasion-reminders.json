@@ -8,8 +8,8 @@
         "height": 200,
         "color": 5
       },
-      "id": "8549b958-6aa3-4836-bf1b-65e86fd95b4c",
-      "name": "Note 2ac2",
+      "id": "bd334cf9-0ace-42fd-a5e6-7a8a73f12267",
+      "name": "Note ef81",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "c0c614ce-d792-4fbd-8887-f29bbf329b50",
+      "id": "68a0fb7c-8cc1-4c03-9117-d34099470b39",
       "name": "Daily 09:30",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -45,7 +45,7 @@
         "filterType": "string",
         "filterString": "=days_until=eq.14&consent_whatsapp=eq.true"
       },
-      "id": "8cded0a9-d3e6-4ed0-905f-d10bf2de6050",
+      "id": "606631ac-d5cb-4cd4-b923-58d87fcbd4e5",
       "name": "Occasions in 14 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -71,7 +71,7 @@
           },
           "conditions": [
             {
-              "id": "a4dd08cd-b047-4945-af51-ee65f9ccbe5c",
+              "id": "24acbd86-edff-4c8d-904e-fbe1bd6a4273",
               "leftValue": "={{ $json.customer_id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -85,7 +85,7 @@
         },
         "options": {}
       },
-      "id": "6e5d0bbd-0fa9-49ec-9c43-2c9b1da34f6e",
+      "id": "b9c6c94b-5a57-4e4b-80d6-7f7a9f21179e",
       "name": "Anyone due?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -96,7 +96,7 @@
     },
     {
       "parameters": {},
-      "id": "514dd5e8-c084-43d3-8645-63384971909a",
+      "id": "4c16bfbf-3dc6-4d6a-b785-35e3a3d73bd3",
       "name": "No occasions today",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -113,7 +113,7 @@
         "filterType": "string",
         "filterString": "=customer_id=eq.{{ $json.customer_id }}&automation=eq.occasion-reminders&created_at=gte.{{ $now.minus({ days: 300 }).toISO() }}"
       },
-      "id": "df528e4a-39a9-4d79-ab89-7a269090f91b",
+      "id": "4825038f-e383-4cef-87c5-fc5ef6bfaf51",
       "name": "Already reminded this year?",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -139,7 +139,7 @@
           },
           "conditions": [
             {
-              "id": "9b78829b-6382-4daf-9883-47c6dffa32e9",
+              "id": "eb5f90f2-78a7-44b6-8e8e-7d450ec32776",
               "leftValue": "={{ $json.id === undefined }}",
               "rightValue": true,
               "operator": {
@@ -153,7 +153,7 @@
         },
         "options": {}
       },
-      "id": "c90cd627-1629-408f-be47-f22ed52bca1a",
+      "id": "99bd2b41-c51e-4075-bae2-66fb8a1f1803",
       "name": "Not yet reminded?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -164,7 +164,7 @@
     },
     {
       "parameters": {},
-      "id": "f0130a86-4aee-4e57-92cc-c3f9c0da4bd0",
+      "id": "628f7597-72be-4743-8e6d-7103d649bb23",
       "name": "Skip: already reminded",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -195,7 +195,7 @@
           }
         }
       },
-      "id": "7873ed33-2dc9-4321-98d8-8638af42fa12",
+      "id": "5e8d83a6-9cb2-467f-8aff-3a739cef26cb",
       "name": "Personal reminder",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -217,7 +217,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"occasion-reminders\",\n  title: \"Occasion reminder sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 6,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "d55f1d42-5c04-4c6f-8f6f-cc0bed0911f7",
+      "id": "eac20b6b-2e92-4f57-a13b-4ac75adf5396",
       "name": "Log reminder",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -231,7 +231,7 @@
         "tableId": "outbound",
         "dataToSend": "autoMapInputData"
       },
-      "id": "78c85853-ff62-4152-81d7-f8a92aa71b51",
+      "id": "dd8b7b72-1895-49fd-abff-c223f021e652",
       "name": "Write outbound",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,

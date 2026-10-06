@@ -192,8 +192,8 @@ export function respond(conv: Conversation, text: string, ctx: AssistantCtx): Re
   // ---- handoff rules first
   const trig = ctx.settings.handoff.find((h) => h.enabled && h.keywords.some((k) => k && lower.includes(k)));
   if (trig) {
-    const lead = trig.id === "h1" ? "I'm so sorry about that. " : trig.id === "h2" ? "I understand. Prices are set by Temmie, so " : trig.id === "h4" ? "Congratulations! Wedding cakes come with a tasting and consultation, so " : "";
-    return out({ intent: "handoff", handoff: trig.label, text: `${lead}I'm passing you to Temmie directly${trig.id === "h4" ? " to book your tasting" : ""}. She'll reply here shortly.` });
+    const lead = trig.id === "h1" ? "I'm so sorry about that. " : trig.id === "h2" ? "I understand. Prices are set by Koret, so " : trig.id === "h4" ? "Congratulations! Wedding cakes come with a tasting and consultation, so " : "";
+    return out({ intent: "handoff", handoff: trig.label, text: `${lead}I'm passing you to Koret directly${trig.id === "h4" ? " to book your tasting" : ""}. She'll reply here shortly.` });
   }
 
   // ---- track an order
@@ -345,7 +345,7 @@ export function respond(conv: Conversation, text: string, ctx: AssistantCtx): Re
     const fee = d.fulfilment === "delivery" ? ZONES.find((z) => z.id === d.zoneId)?.feeNGN ?? 0 : 0;
     const total = price + fee;
     if (total > 500000 && ctx.settings.handoff.find((h) => h.id === "h5")?.enabled) {
-      return out({ intent: "handoff", handoff: "Very large order (over ₦500k)", text: `${pieces.join(" ")} For an order of this size, Temmie will confirm the details personally. She'll message you shortly.` });
+      return out({ intent: "handoff", handoff: "Very large order (over ₦500k)", text: `${pieces.join(" ")} For an order of this size, Koret will confirm the details personally. She'll message you shortly.` });
     }
     d.awaiting = "confirm";
     pieces.push(`${d.fulfilment === "delivery" ? `Delivery to ${ZONES.find((z) => z.id === d.zoneId)?.name} is ${naira(fee)}, so your` : "Pickup is free, so your"} total is ${naira(total)}. A ${ctx.settings.depositPct}% deposit of ${naira(depositFor(total, ctx.settings.depositPct))} confirms your ${fmtDate(d.date)} slot. Shall I send the payment link?`);
@@ -361,7 +361,7 @@ export function respond(conv: Conversation, text: string, ctx: AssistantCtx): Re
     return out({ intent: "greeting", text: "What are we celebrating? I can quote a custom cake, check dates, share the menu, book a class or plan corporate catering.", quickReplies: ["Birthday cake", "See the menu", "Baking classes", "Corporate breakfast"] });
   }
   if (kb?.hits) return out({ intent: "kb", kbId: kb.k.id, text: kb.k.answer });
-  return out({ intent: "fallback", text: "I can help with custom cakes, treats, delivery, classes and corporate catering. What would you like? If you'd rather speak to Temmie, just say so.", quickReplies: ["Quote a cake", "See the menu", "Speak to Temmie"] });
+  return out({ intent: "fallback", text: "I can help with custom cakes, treats, delivery, classes and corporate catering. What would you like? If you'd rather speak to Koret, just say so.", quickReplies: ["Quote a cake", "See the menu", "Speak to Koret"] });
 }
 
 function buildOrder(d: Draft, ctx: AssistantCtx) {

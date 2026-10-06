@@ -54,7 +54,7 @@ export default function ReviewsPage() {
     const c = cust(o.customerId);
     const code = `SORRY${o.number.slice(3)}`;
     run((s) => {
-      send(s, o.customerId, "whatsapp", `Hi ${c ? firstName(c.name) : "there"}, Temmie here. I'm truly sorry your ${orderLabel(o)} wasn't perfect. That's not our standard. Please use code ${code} for 20% off your next order, and I'll personally check it before it leaves the kitchen.`, "review-request", { orderId: o.id });
+      send(s, o.customerId, "whatsapp", `Hi ${c ? firstName(c.name) : "there"}, Koret here. I'm truly sorry your ${orderLabel(o)} wasn't perfect. That's not our standard. Please use code ${code} for 20% off your next order, and I'll personally check it before it leaves the kitchen.`, "review-request", { orderId: o.id });
       logEvent(s, { automation: "review-request", kind: "action", title: `Apology and 20% voucher sent for ${o.number}`, detail: `${c?.name ?? "Customer"} · code ${code}`, customerId: o.customerId, orderId: o.id, minutesSaved: 8 });
     });
     setHandled((h) => ({ ...h, [o.id]: "made-right" }));

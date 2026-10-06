@@ -173,7 +173,7 @@ export function buildSeed(): DemoData {
         o.reviewRequested = true;
         if (r.chance(0.68)) {
           o.rating = r.weighted([[5, 72], [4, 22], [3, 6]]);
-          o.review = o.rating === 5 ? r.pick(["Absolutely beautiful and so moist. Everyone asked who made it!", "Exactly like the picture. Delivered on time too.", "The red velvet is the best in Lagos, no cap.", "My daughter screamed when she saw it. Thank you Temmie!", "Tasted as good as it looked. Will order again."]) : o.rating === 4 ? r.pick(["Lovely cake, delivery was a bit late but worth it.", "Great taste, colours slightly different from my reference."]) : "Cake was nice but the icing had started melting by the time it arrived.";
+          o.review = o.rating === 5 ? r.pick(["Absolutely beautiful and so moist. Everyone asked who made it!", "Exactly like the picture. Delivered on time too.", "The red velvet is the best in Lagos, no cap.", "My daughter screamed when she saw it. Thank you Koret!", "Tasted as good as it looked. Will order again."]) : o.rating === 4 ? r.pick(["Lovely cake, delivery was a bit late but worth it.", "Great taste, colours slightly different from my reference."]) : "Cake was nice but the icing had started melting by the time it arrived.";
         }
       }
     }
@@ -259,8 +259,8 @@ export function buildSeed(): DemoData {
     ] },
     { cust: 71, channel: "instagram", status: "handoff", reason: "Complaint or refund", mins: 34, msgs: [
       ["user", "My cake arrived and the icing had melted on one side 😩"],
-      ["ai", "I'm so sorry, that's not the experience we want for you. I'm passing this straight to Temmie so she can make it right."],
-      ["system", "Handed to Temmie · reason: Complaint or refund"],
+      ["ai", "I'm so sorry, that's not the experience we want for you. I'm passing this straight to Koret so she can make it right."],
+      ["system", "Handed to Koret · reason: Complaint or refund"],
     ] },
     { cust: 14, channel: "web", status: "ai", mins: 300, msgs: [
       ["user", "Do you run baking classes for beginners?"],
@@ -391,11 +391,11 @@ export function buildSeed(): DemoData {
     const occRev = r.chance(0.45) ? r.pick([48000, 52000, 58000, 62000, 72000]) : 0;
     log({ at: iso(t - 14 * HOUR), automation: "occasion-reminders", kind: "action", title: `${occ} birthday & anniversary reminders sent`, detail: occRev ? `1 turned into an order (₦${occRev.toLocaleString()})` : "Personal offers with last year's cake photo", minutesSaved: occ * 6, revenueNGN: occRev || undefined });
     log({ at: iso(t - 13 * HOUR), automation: "reorder-nudge", kind: "action", title: `${reo} re-order nudges sent to treat customers`, detail: "Flavour of the week + one-tap re-order", minutesSaved: reo * 4, revenueNGN: r.chance(0.35) ? r.pick([12000, 14500, 15000, 24000]) : undefined });
-    log({ at: iso(t - 17.5 * HOUR), automation: "daily-report", kind: "action", title: "Morning kitchen brief sent to Temmie", detail: `${upd} bakes · ${Math.max(1, upd - 3)} deliveries · balances due flagged`, minutesSaved: 20 });
+    log({ at: iso(t - 17.5 * HOUR), automation: "daily-report", kind: "action", title: "Morning kitchen brief sent to Koret", detail: `${upd} bakes · ${Math.max(1, upd - 3)} deliveries · balances due flagged`, minutesSaved: 20 });
     log({ at: iso(t - 10 * HOUR), automation: "order-updates", kind: "action", title: `${upd} order status updates sent`, detail: "Baking, ready and out-for-delivery messages with photos", minutesSaved: upd * 3 });
     if (stock) log({ at: iso(t - 16 * HOUR), automation: "stock-reorder", kind: "alert", title: "Low stock: purchase order drafted", detail: r.pick(["Icing sugar and whipping cream to Ikeja Baking Supplies", "Cream cheese and butter to Lagos Dairy Hub", "Strawberries and eggs to Fresh Farm", "Cake boxes to Boxit Packaging"]), minutesSaved: 15 });
   }
-  conversations.forEach((cv) => cv.status === "handoff" && log({ at: cv.messages.find((m) => m.from === "system")!.at, automation: "ai-assistant", kind: "handoff", title: "Handed to Temmie", detail: cv.handoffReason, customerId: cv.customerId, minutesSaved: 2 }));
+  conversations.forEach((cv) => cv.status === "handoff" && log({ at: cv.messages.find((m) => m.from === "system")!.at, automation: "ai-assistant", kind: "handoff", title: "Handed to Koret", detail: cv.handoffReason, customerId: cv.customerId, minutesSaved: 2 }));
   quotes.filter((q) => q.sentAt).forEach((q) => log({ at: q.sentAt!, automation: "corporate", kind: "action", title: `Catering quote ${q.number} sent to ${q.company}`, detail: `${q.guests} guests · ₦${q.totalNGN.toLocaleString()}`, customerId: q.customerId, minutesSaved: 35 }));
   enrollments.filter((e) => new Date(e.createdAt).getTime() > goLive).forEach((e) => log({ at: e.createdAt, automation: "academy", kind: "action", title: "Class seat booked and payment link sent", detail: COURSES.find((c) => c.id === cohorts.find((x) => x.id === e.cohortId)!.courseId)!.title, customerId: e.customerId, minutesSaved: 10 }));
 

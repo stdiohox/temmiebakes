@@ -234,7 +234,7 @@ function ReviewBox({ order: o }: { order: Order }) {
     e.preventDefault();
     if (!rating) return setErr("Tap a star to rate.");
     run((s) => recordReview(s, o.id, rating, text.trim()));
-    toast("Review received", rating >= 4 ? "Thank you! Temmie reads every one." : "Thank you. Temmie will reach out personally.");
+    toast("Review received", rating >= 4 ? "Thank you! Koret reads every one." : "Thank you. Koret will reach out personally.");
   };
 
   const shown = hover || rating;

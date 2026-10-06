@@ -127,7 +127,7 @@ function WebChat({ convId, onClose, prefill }: { convId?: string; onClose: () =>
       </div>
       <div className="border-t border-line p-3">
         <Composer onSend={send} placeholder="Ask about cakes, prices, delivery..." variant="web" autoFocus />
-        <p className="mt-2 text-center text-[11px] text-ink-3">AI assistant · Temmie can take over at any time</p>
+        <p className="mt-2 text-center text-[11px] text-ink-3">AI assistant · Koret can take over at any time</p>
       </div>
     </motion.div>
   );
@@ -165,7 +165,7 @@ function PhoneChat({ kind, convId, onClose, prefill }: { kind: "whatsapp" | "ins
             <p className="flex items-center gap-1 text-[15px] font-semibold leading-tight">
               {ig ? "koretbakes" : "Koretbakes"} <SealCheck size={15} weight="fill" className={ig ? "text-info" : "text-[#b9f5c8]"} />
             </p>
-            <p className={cx("text-[11.5px]", ig ? "text-ink-3" : "text-white")}>{typing ? (typing === "ai" ? "typing..." : "Temmie is typing...") : ig ? "Dessert Shop · replies instantly" : "Business account · AI assisted"}</p>
+            <p className={cx("text-[11.5px]", ig ? "text-ink-3" : "text-white")}>{typing ? (typing === "ai" ? "typing..." : "Koret is typing...") : ig ? "Dessert Shop · replies instantly" : "Business account · AI assisted"}</p>
           </div>
           {!ig && (
             <>

@@ -8,8 +8,8 @@
         "height": 220,
         "color": 4
       },
-      "id": "97497760-ab5b-411c-9328-865eff7d62c1",
-      "name": "Note 314a",
+      "id": "287d3c9d-02d4-4fd3-b4bb-3df5d99eed6c",
+      "name": "Note 4c5d",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -24,7 +24,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "a53b6f7e-4c3d-45e1-994b-75ee60f6765f",
+      "id": "92dc0224-37aa-4ce2-808e-6a807b146e55",
       "name": "Webhook: checkout, cake builder, Tia",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -32,13 +32,13 @@
         0,
         0
       ],
-      "webhookId": "e67317b7-d847-4b1f-8a35-85781c60d48a"
+      "webhookId": "0adeb82f-5b64-4aa5-b388-496e01105485"
     },
     {
       "parameters": {
         "jsCode": "return $input.all().map(({ json: j }) => {\n  const b = j.body ?? {};\n  let phone = String(b.phone ?? \"\").replace(/[^\\d+]/g, \"\");\n  if (/^0\\d{10}$/.test(phone)) phone = \"+234\" + phone.slice(1);\n  return { json: { source: b.source ?? \"web\", name: String(b.name ?? \"\").trim(), phone, instagram: b.instagram ?? null, email: b.email ?? null,\n    items: b.items ?? [], cake: b.cake ?? null, due_date: b.due_date, due_time: b.due_time ?? \"14:00\", fulfilment: b.fulfilment ?? \"delivery\",\n    zone_id: b.zone_id ?? null, address: b.address ?? null, occasion: b.occasion ?? null, message_on_cake: b.message_on_cake ?? null, received_at: new Date().toISOString() } };\n});"
       },
-      "id": "7189abdb-4c43-4a1e-b751-0828ec1d185b",
+      "id": "14536a3f-678b-4871-aae0-0d5c41cf7e1c",
       "name": "Normalise order",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -57,7 +57,7 @@
           },
           "conditions": [
             {
-              "id": "b722d28c-9129-4017-9ad9-b28010de616c",
+              "id": "8b055c62-a33b-44a1-afe6-da6624f918e8",
               "leftValue": "={{ Boolean($json.phone && $json.due_date && ($json.items.length || $json.cake)) }}",
               "rightValue": true,
               "operator": {
@@ -71,7 +71,7 @@
         },
         "options": {}
       },
-      "id": "fe9d9880-bdf3-48dc-afa0-44862cee4f7f",
+      "id": "cf4fc2bc-ebfe-420d-a143-4317a0769563",
       "name": "Has phone, items and date?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -86,7 +86,7 @@
         "responseBody": "={{ { ok: false, error: \"phone, items and due date are required\" } }}",
         "options": {}
       },
-      "id": "8abc4130-14e8-4169-82b0-65a1b520e92a",
+      "id": "b1c378c9-fd16-4cb6-b133-64a6b06362f3",
       "name": "Respond 422: missing details",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -103,7 +103,7 @@
         "filterType": "string",
         "filterString": "=or=(phone.eq.{{ $json.phone }},instagram.eq.{{ $json.instagram || \"none\" }})"
       },
-      "id": "58761730-eec6-43fc-b168-83025167d980",
+      "id": "4cb54056-1ba5-455f-9a9c-4b7dd31b4dd9",
       "name": "Find customer",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -123,7 +123,7 @@
       "parameters": {
         "jsCode": "const o = $(\"Normalise order\").first().json;\nconst c = $input.all().map((i) => i.json).find((x) => x.id);\nreturn [{ json: { id: c?.id, name: c?.name ?? o.name, phone: o.phone, instagram: c?.instagram ?? o.instagram, zone_id: o.zone_id ?? c?.zone_id, source: c?.source ?? o.source, is_new: !c } }];"
       },
-      "id": "2eb2f740-9bf3-4bc0-8dd3-f20da3296595",
+      "id": "1ac7e962-088d-411f-b1d9-93470242bcc6",
       "name": "Customer upsert payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -138,7 +138,7 @@
         "tableId": "customers",
         "dataToSend": "autoMapInputData"
       },
-      "id": "43625856-e58f-4023-bfc3-ad3fc084652f",
+      "id": "17142a72-76f0-4e31-b75f-242f42df1a0f",
       "name": "Upsert customer",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -161,7 +161,7 @@
         "filterType": "string",
         "filterString": "=active=eq.true"
       },
-      "id": "50583ffe-09b1-431d-9802-ae8629487283",
+      "id": "f724b2e9-d219-4076-b410-9e15c33d891e",
       "name": "Load menu, cake rules, zones",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -181,7 +181,7 @@
       "parameters": {
         "jsCode": "// Same rules as the website: size base + tiers + flavour/filling/finish/decoration extras, zone delivery fee\nconst book = Object.fromEntries($input.all().map((i) => [i.json.key, i.json]));\nconst o = $(\"Normalise order\").first().json;\nlet subtotal = 0, oven_points = 0, lead_days = 1;\nfor (const it of o.items) { const p = book[\"product:\" + it.product_id]; if (!p) throw new Error(\"Unknown product \" + it.product_id); subtotal += p.price_ngn * it.qty; oven_points += p.oven_points * it.qty; lead_days = Math.max(lead_days, p.lead_days); }\nif (o.cake) {\n  const c = o.cake; const base = book[\"size:\" + c.size_inches]?.price_ngn;\n  if (!base) throw new Error(\"Unsupported cake size \" + c.size_inches);\n  const tierMult = [0, 1, 1.85, 2.6, 3.3][c.tiers ?? 1];\n  subtotal += Math.round((base * tierMult + (book[\"flavour:\" + c.flavour]?.price_ngn ?? 0) + (book[\"filling:\" + c.filling]?.price_ngn ?? 0) + (book[\"finish:\" + c.finish]?.price_ngn ?? 0) + (book[\"decoration:\" + c.decoration]?.price_ngn ?? 0)) / 500) * 500;\n  oven_points += (c.tiers ?? 1) * 2 + (c.size_inches >= 10 ? 1 : 0); lead_days = Math.max(lead_days, c.tiers > 1 ? 4 : 2);\n}\nconst delivery = o.fulfilment === \"delivery\" ? (book[\"zone:\" + o.zone_id]?.price_ngn ?? null) : 0;\nif (delivery === null) throw new Error(\"Unknown delivery zone \" + o.zone_id);\nconst daysAhead = (new Date(o.due_date) - new Date(new Date().toISOString().slice(0, 10))) / 86400000;\nreturn [{ json: { ...o, customer_id: $(\"Upsert customer\").first().json.id, subtotal_ngn: subtotal, delivery_ngn: delivery, total_ngn: subtotal + delivery, deposit_ngn: Math.ceil((subtotal + delivery) * 0.5 / 100) * 100, oven_points, lead_days, lead_ok: daysAhead >= lead_days } }];"
       },
-      "id": "60d528b6-dd56-46b8-b158-23b6db324f8e",
+      "id": "84e4cfdb-7f15-43d3-9bbe-d37eee1b6412",
       "name": "Price the order",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -198,7 +198,7 @@
         "filterType": "string",
         "filterString": "=due_date=eq.{{ $json.due_date }}&status=not.in.(cancelled,enquiry)"
       },
-      "id": "dbec2a34-89bd-442a-a3b0-d2aec574fd3f",
+      "id": "e90468ef-c461-4296-ac7a-00b1cd555ed8",
       "name": "Orders booked that day",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -218,7 +218,7 @@
       "parameters": {
         "jsCode": "const cap = Number($vars.DAILY_OVEN_POINTS ?? 20);\nconst booked = $input.all().reduce((s, i) => s + Number(i.json.oven_points ?? 0), 0);\nconst want = Number($(\"Price the order\").first().json.oven_points ?? 1);\nconst day = $(\"Price the order\").first().json.due_date;\nconst sunday = new Date(day + \"T12:00:00Z\").getUTCDay() === 0;\nreturn [{ json: { ...$(\"Price the order\").first().json, booked, capacity: cap, fits: !sunday && booked + want <= cap, reason: sunday ? \"Closed on Sundays\" : booked + want > cap ? \"Kitchen full that day\" : null } }];"
       },
-      "id": "3888bb84-a6c7-45b3-ad74-be07aedc9a57",
+      "id": "23f02076-5348-4f93-abff-a226cfaae959",
       "name": "Capacity check",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -237,7 +237,7 @@
           },
           "conditions": [
             {
-              "id": "dba5aab9-8a37-4aa9-8d46-6ef7cd360c8d",
+              "id": "deb902ca-7a80-4891-838e-567505bfbd5e",
               "leftValue": "={{ $json.fits && $json.lead_ok }}",
               "rightValue": true,
               "operator": {
@@ -251,7 +251,7 @@
         },
         "options": {}
       },
-      "id": "98059617-ad7d-4ec6-893b-db5056b99388",
+      "id": "e0579e6d-c621-4209-a4d8-9f8a5f19518b",
       "name": "Fits lead time and kitchen?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -264,7 +264,7 @@
       "parameters": {
         "jsCode": "// Offer the earliest day with room instead of refusing\nreturn [{ json: { ...$json, ok: false, message: ($json.reason ?? \"That date is too soon for this order\") + \". The next free date is in the reply.\" } }];"
       },
-      "id": "ce974324-da36-41b6-b813-6620c5dd27bb",
+      "id": "6aa1da7a-9f4b-46b8-988d-d8be0355b7b7",
       "name": "Find next free date",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -279,7 +279,7 @@
         "responseBody": "={{ { ok: false, reason: $json.message } }}",
         "options": {}
       },
-      "id": "04a4213b-990c-442e-967c-f6712c0bf0bf",
+      "id": "96f1914c-fd0e-4378-9ac2-edbbaf95eea8",
       "name": "Respond: date unavailable",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -292,7 +292,7 @@
       "parameters": {
         "jsCode": "const n = \"TB-\" + String(Math.floor(1000 + Math.random() * 9000));\nreturn [{ json: { ...$json, number: n, status: \"quoted\", payment_status: \"unpaid\", paid_ngn: 0, assisted_by_ai: $json.source !== \"web\" } }];"
       },
-      "id": "95e4c0c2-c9da-416c-a5dd-649f00165ba0",
+      "id": "9ca63fef-df3c-4ea4-861a-63482e14e031",
       "name": "Order row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -306,7 +306,7 @@
         "tableId": "orders",
         "dataToSend": "autoMapInputData"
       },
-      "id": "e8b57e11-3706-4192-945e-8acb64766da0",
+      "id": "5bacd0e9-1a13-4338-b695-00e333de4630",
       "name": "Create order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -343,7 +343,7 @@
           }
         }
       },
-      "id": "96febc00-233b-459c-95e8-c36d42994e5c",
+      "id": "218f856b-46f9-4ca4-8f80-cf378dca8835",
       "name": "Paystack: deposit link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -383,7 +383,7 @@
           }
         }
       },
-      "id": "05290611-b970-4caa-bd05-b63a35c7c35c",
+      "id": "24c9f338-550e-4dd0-9fce-34fa0ccb85a1",
       "name": "WhatsApp quote with pay link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -405,7 +405,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"order-intake\",\n  title: `Order ${$(\"Order row\").first().json.number} quoted automatically`,\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 12,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "fd4bb8f4-1664-4da4-95ac-2b1095b9b53e",
+      "id": "a29b6629-1ae9-47ed-9699-d36733761ff1",
       "name": "Log intake event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -419,7 +419,7 @@
         "tableId": "automation_events",
         "dataToSend": "autoMapInputData"
       },
-      "id": "f1af0d3e-0935-4676-8573-b9bc091770e2",
+      "id": "6ce74d8d-caa5-4de5-b695-6a4f2c95b228",
       "name": "Write automation_events",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -442,7 +442,7 @@
           "waitForSubWorkflow": false
         }
       },
-      "id": "f7477115-8105-4ff0-b699-cd11c7c69c27",
+      "id": "4b0a1cba-92e5-4ffa-b8a5-072b1a4fb7d5",
       "name": "Start quote follow-up (03)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.1,
@@ -457,7 +457,7 @@
         "responseBody": "={{ { ok: true, number: $(\"Order row\").first().json.number } }}",
         "options": {}
       },
-      "id": "e8a27e83-b431-4cd7-b7ff-fba340ade37c",
+      "id": "8e552bc3-7330-4b47-88f1-aa25d60f2781",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,

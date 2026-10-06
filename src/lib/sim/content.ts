@@ -91,7 +91,7 @@ export function generateContent({ kind, product: p, tone, angle, variant: v }: G
       body = [
         `Hook (0-2s): On-screen text ${pick(hooks, v)}. Close-up of the ${p.name} on the turntable.`,
         `2-5s: Quick cuts of the finishing touches, piping and sprinkles. Trending sound, upbeat.`,
-        `5-8s: ${tone === "luxurious" ? "Slow pan with soft light, gold details catching the light." : tone === "playful" ? "Speed-up of the team boxing it, a little dance at the door." : "Temmie placing it in the box with a handwritten note."}`,
+        `5-8s: ${tone === "luxurious" ? "Slow pan with soft light, gold details catching the light." : tone === "playful" ? "Speed-up of the team boxing it, a little dance at the door." : "Koret placing it in the box with a handwritten note."}`,
         `8-10s: The reveal. Text overlay: "${price}. ${lead}."`,
         ``,
         `Caption: ${opener} ${angleLine} ${cta}`,

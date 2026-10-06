@@ -12,7 +12,7 @@
           ]
         }
       },
-      "id": "70b2f41a-7119-45ac-a723-775ceee63235",
+      "id": "6c2e9f26-ee79-4f08-bf61-30d395e7ad6a",
       "name": "Mondays 10:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -29,7 +29,7 @@
         "filterType": "string",
         "filterString": "=days_since_order=gte.45&days_since_order=lte.120&segment=neq.corporate&consent_whatsapp=eq.true"
       },
-      "id": "23f5f816-798a-415b-a547-51a0d09439f7",
+      "id": "10450fc3-1e60-4188-bbf9-facfdbc687ae",
       "name": "Quiet 45-120 days, opted in",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -55,7 +55,7 @@
           },
           "conditions": [
             {
-              "id": "0dfe4c9b-3e2f-4b10-a501-215347fa6b99",
+              "id": "36056f19-52aa-439b-ac62-cc64a9c4a1a0",
               "leftValue": "={{ $json.id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -69,7 +69,7 @@
         },
         "options": {}
       },
-      "id": "144742ce-443f-491d-908b-60f5eba3ba11",
+      "id": "d9f55406-ed6f-4f31-9196-d42e0566345d",
       "name": "Anyone?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -80,7 +80,7 @@
     },
     {
       "parameters": {},
-      "id": "6126df14-8208-4bb0-9d81-9e7dcd78aad7",
+      "id": "ac4d5f0a-44a6-4b3b-882d-e7cdcdd75a38",
       "name": "Nobody to nudge",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -116,7 +116,7 @@
           }
         }
       },
-      "id": "e5b11f3f-287f-42e1-bab9-cbb301a4d84a",
+      "id": "7079e3ef-6436-495e-be38-faf9610b36aa",
       "name": "Claude: personal nudge",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -138,7 +138,7 @@
       "parameters": {
         "jsCode": "const t = $json.content?.[0]?.text?.trim() ?? \"\";\nconst ok = t.length > 10 && t.length < 300 && !/—|–|discount|% off/i.test(t);\nreturn [{ json: { ...$(\"Quiet 45-120 days, opted in\").item.json, text: ok ? t : null, needs_review: !ok } }];"
       },
-      "id": "a3eea893-d34d-4943-88e9-992e3e23fd7f",
+      "id": "31f8e1f3-c8aa-4cad-aba0-92c97e9c7c5b",
       "name": "Check message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -157,7 +157,7 @@
           },
           "conditions": [
             {
-              "id": "17df9b8f-b3a0-4cc4-b47e-d34419f89e80",
+              "id": "ccdf0f01-fa4c-4796-858a-ba5b785c38bb",
               "leftValue": "={{ $json.text !== null }}",
               "rightValue": true,
               "operator": {
@@ -171,7 +171,7 @@
         },
         "options": {}
       },
-      "id": "b28b658a-d6d6-4608-8254-e49ef194f1b5",
+      "id": "5a039b2c-cc02-4b6c-9024-f7fccd32fafc",
       "name": "Message OK?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -182,7 +182,7 @@
     },
     {
       "parameters": {},
-      "id": "a1104abe-6fe8-406c-8b5c-e5120e571042",
+      "id": "824e5588-5eee-4b36-9f47-e4b2d6093d74",
       "name": "Held for review (bad AI output)",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -213,7 +213,7 @@
           }
         }
       },
-      "id": "ae814f1c-4815-4883-8a19-25f19ff81c8a",
+      "id": "db3b44a5-b4f7-4a2a-aa1a-aabb47cd8a07",
       "name": "Send nudge",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -235,7 +235,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"reorder-nudge\",\n  title: \"Re-order nudge sent\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 4,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "d9f0b03e-45f7-4219-874f-de5dd22d3d73",
+      "id": "e33ef263-90bc-4f0b-ac06-385127225d9d",
       "name": "Log nudge",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

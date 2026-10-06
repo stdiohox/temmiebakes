@@ -8,7 +8,7 @@
         "responseMode": "responseNode",
         "options": {}
       },
-      "id": "75d196a0-c3f3-4bb4-8462-5bd53e694f88",
+      "id": "fece6c03-4def-4ffe-9338-fdc0248bb5e0",
       "name": "Webhook: class booking (website, Tia)",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
@@ -16,7 +16,7 @@
         0,
         0
       ],
-      "webhookId": "e3abc76c-f163-458c-9aad-a7e771f17f73"
+      "webhookId": "6ee18535-762b-4838-bf5b-86e35afb2416"
     },
     {
       "parameters": {
@@ -26,7 +26,7 @@
         "filterType": "string",
         "filterString": "=id=eq.{{ $json.body.cohort_id }}"
       },
-      "id": "9c32dff6-f015-4447-bce0-94ea93534a18",
+      "id": "e5341cc2-ce22-4cde-a53a-0ee7bf25687e",
       "name": "Load cohort",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -52,7 +52,7 @@
           },
           "conditions": [
             {
-              "id": "bc8744f6-eac1-434b-9275-e954c5255bda",
+              "id": "0abcad0d-9a5e-4bc2-8c44-9ace7faec887",
               "leftValue": "={{ $json.seats_taken < $json.seats }}",
               "rightValue": true,
               "operator": {
@@ -66,7 +66,7 @@
         },
         "options": {}
       },
-      "id": "c48fa595-d8a6-4b98-b512-64400fd6f399",
+      "id": "d93ec600-5180-4ba2-81b8-44461e5aa547",
       "name": "Seat available?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -79,7 +79,7 @@
       "parameters": {
         "jsCode": "return [{ json: { ...$(\"Webhook: class booking (website, Tia)\").first().json.body, status: \"waitlist\" } }];"
       },
-      "id": "f2b6b2e9-59e4-4029-982c-86af0d2d82ef",
+      "id": "64aaedd8-b78b-494e-a611-dc5499aacf65",
       "name": "Waitlist",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -93,7 +93,7 @@
         "tableId": "enrollments",
         "dataToSend": "autoMapInputData"
       },
-      "id": "1a736da1-c180-4a11-b88e-dd7836b672a6",
+      "id": "d3ad8a61-bf82-43b5-b26a-0cfa4527113e",
       "name": "Add to waitlist",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -114,7 +114,7 @@
         "responseBody": "={{ { ok: true, waitlist: true } }}",
         "options": {}
       },
-      "id": "c7ef5f21-dd4a-4699-8118-153532311d7a",
+      "id": "4eb00358-bf61-4a49-825b-645049b6d893",
       "name": "Respond: waitlisted",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -127,7 +127,7 @@
       "parameters": {
         "jsCode": "const b = $(\"Webhook: class booking (website, Tia)\").first().json.body;\nreturn [{ json: { cohort_id: b.cohort_id, customer_id: b.customer_id, phone: b.phone, status: \"reserved\", deposit_ngn: Math.round($(\"Load cohort\").first().json.price_ngn / 2) } }];"
       },
-      "id": "2145700a-7062-482c-a038-7ec5f818d311",
+      "id": "821b4f2a-631f-42c9-aaf8-f223b9d641fb",
       "name": "Enrolment row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -141,7 +141,7 @@
         "tableId": "enrollments",
         "dataToSend": "autoMapInputData"
       },
-      "id": "cf1f2cdb-430c-42ae-b873-f35d34105a8f",
+      "id": "0182fd58-10a3-42f9-8563-bc3ef2caecd9",
       "name": "Reserve seat",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -178,7 +178,7 @@
           }
         }
       },
-      "id": "bf36e44e-3e26-495f-8579-271c295537a0",
+      "id": "feddb42c-b6c2-4910-a7de-f54c80a0f040",
       "name": "Paystack: class deposit",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -218,7 +218,7 @@
           }
         }
       },
-      "id": "2f3e90d0-4944-4ff1-844f-df80ff8d2ba9",
+      "id": "a06d164a-7ed8-419f-9ecd-e2a34ef3b4aa",
       "name": "Send seat + pay link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -242,7 +242,7 @@
         "responseBody": "={{ { ok: true } }}",
         "options": {}
       },
-      "id": "82ec6a2d-d499-42db-8d9f-450bd331c162",
+      "id": "3269fe61-624d-4f78-bda6-790952490fd2",
       "name": "Respond 200",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
@@ -262,7 +262,7 @@
           ]
         }
       },
-      "id": "8f0fde5a-76c0-44a5-8ace-a8cadc9c8adf",
+      "id": "572029d7-4776-4242-a36a-7d93ad12669e",
       "name": "Daily 09:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -279,7 +279,7 @@
         "filterType": "string",
         "filterString": "=days_until=eq.7"
       },
-      "id": "d7da447c-1461-4e5a-9e9d-4da82a16a625",
+      "id": "3f65ec70-eabd-45e2-8da8-802b3456036e",
       "name": "Classes starting in 7 days",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -305,7 +305,7 @@
           },
           "conditions": [
             {
-              "id": "2e4b76a7-422a-4e1a-ac1f-515931132281",
+              "id": "4b51c901-49b4-499b-a836-cdbb19c133c9",
               "leftValue": "={{ $json.id !== undefined }}",
               "rightValue": true,
               "operator": {
@@ -319,7 +319,7 @@
         },
         "options": {}
       },
-      "id": "b7f700e8-f3ed-4a6c-b060-8836358b4d73",
+      "id": "07281de0-876c-4d96-a1a6-243f00266561",
       "name": "Anyone starting?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -330,7 +330,7 @@
     },
     {
       "parameters": {},
-      "id": "fffe276f-ff37-4dc3-9814-092bdf56b044",
+      "id": "28a30282-9ed2-43e7-8773-5cb012140a96",
       "name": "No classes next week",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -361,7 +361,7 @@
           }
         }
       },
-      "id": "58add4c4-95b9-4611-a28f-bbf7eafdf6cd",
+      "id": "d4c19d79-ae05-4869-bebc-9879f72c43e1",
       "name": "Kit list & directions",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,

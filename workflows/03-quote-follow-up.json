@@ -8,8 +8,8 @@
         "height": 200,
         "color": 4
       },
-      "id": "2ec9b292-a0b4-4a25-8e2e-beb1fdedc6ea",
-      "name": "Note 3b48",
+      "id": "3595bbae-fd96-429e-bf8e-5b9396000a20",
+      "name": "Note f677",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
@@ -21,7 +21,7 @@
       "parameters": {
         "inputSource": "passthrough"
       },
-      "id": "6758c3f0-369b-45dd-b971-d6e0a7979826",
+      "id": "6d6df4b2-7d73-4450-b847-8bd5a2f20190",
       "name": "Called by intake (01)",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
@@ -35,7 +35,7 @@
         "amount": 6,
         "unit": "hours"
       },
-      "id": "3a379fee-4a8b-4efd-bee3-0d9f73145f6b",
+      "id": "8b58ed55-5542-4492-ba7d-ab924db30b84",
       "name": "Wait 6 hours",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -43,7 +43,7 @@
         240,
         0
       ],
-      "webhookId": "8aa1a193-6d02-41a5-b898-e52d87af693b"
+      "webhookId": "6171cdd1-31cc-4ac0-8688-b29a315ab34c"
     },
     {
       "parameters": {
@@ -53,7 +53,7 @@
         "filterType": "string",
         "filterString": "=number=eq.{{ $(\"Called by intake (01)\").first().json.number }}"
       },
-      "id": "28ff5906-b33b-4727-b938-b9ed5d8d2144",
+      "id": "0bd5820b-9bce-42ce-a0b6-b921c29cc1ba",
       "name": "Re-check order",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -79,7 +79,7 @@
           },
           "conditions": [
             {
-              "id": "c70ccb7f-e3dc-4943-bf4d-1322df97472f",
+              "id": "80a57654-935e-4425-a7cf-98f933420dd6",
               "leftValue": "={{ $json.payment_status !== \"unpaid\" || $json.status === \"cancelled\" }}",
               "rightValue": true,
               "operator": {
@@ -93,7 +93,7 @@
         },
         "options": {}
       },
-      "id": "bd31ca8d-2521-4217-9513-909e385edfc3",
+      "id": "5e0b1461-2eb8-4c9c-b9f6-38bac9ca5025",
       "name": "Deposit paid?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -104,7 +104,7 @@
     },
     {
       "parameters": {},
-      "id": "f003237e-23db-4dda-9f38-f8dff45b01fc",
+      "id": "9b63f455-e7cf-495c-8286-1f9b2904b6f7",
       "name": "Done: paid or cancelled",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -135,7 +135,7 @@
           }
         }
       },
-      "id": "06ca7eba-0da9-4c0b-8a0c-f2c9b69800ed",
+      "id": "f2e30525-7707-455e-8a4f-fc14aef34709",
       "name": "Nudge with pay link",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -158,7 +158,7 @@
         "amount": 18,
         "unit": "hours"
       },
-      "id": "70dcf9dc-f250-46d5-86e2-c9f3a4c22c17",
+      "id": "7e3cb36e-4214-43b2-a807-4af2742be0ef",
       "name": "Wait until 24 hours",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -166,7 +166,7 @@
         1200,
         60
       ],
-      "webhookId": "5518c53b-ffbd-4d1a-85fd-6db7db7291fb"
+      "webhookId": "320816e3-6131-44ed-a0ff-513d9b53eed4"
     },
     {
       "parameters": {
@@ -176,7 +176,7 @@
         "filterType": "string",
         "filterString": "=number=eq.{{ $(\"Called by intake (01)\").first().json.number }}"
       },
-      "id": "ce6e62d8-ce7a-4a9e-90e3-b97164bae6db",
+      "id": "490c6aaf-cbf9-40eb-9251-4c27b6657435",
       "name": "Re-check order again",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -202,7 +202,7 @@
           },
           "conditions": [
             {
-              "id": "61d13db4-f2c6-4ba1-8d35-d894888df974",
+              "id": "fb22307b-e0b5-4f6f-8e2b-2e3093fc69f0",
               "leftValue": "={{ $json.payment_status !== \"unpaid\" || $json.status === \"cancelled\" }}",
               "rightValue": true,
               "operator": {
@@ -216,7 +216,7 @@
         },
         "options": {}
       },
-      "id": "8fbeddd6-3da0-4534-850a-e951981b2c35",
+      "id": "8fb6361c-5e52-4c60-8538-6cb0f5101a42",
       "name": "Paid now?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
@@ -227,7 +227,7 @@
     },
     {
       "parameters": {},
-      "id": "a15ccd76-5140-460f-884b-7bec7947c418",
+      "id": "e3fb075e-7a53-4b0b-8241-4983213e7a5c",
       "name": "Done: converted after nudge",
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
@@ -244,7 +244,7 @@
         "filterString": "=id=eq.{{ $json.id }}",
         "dataToSend": "autoMapInputData"
       },
-      "id": "98c70b63-6b3b-491f-8c58-0e0b6c5b7203",
+      "id": "5c4bc848-e200-48f9-bc33-76193b3b6d15",
       "name": "Release slot: cancel quote",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
@@ -281,7 +281,7 @@
           }
         }
       },
-      "id": "52aaedcc-342b-40bc-9def-186eac278a65",
+      "id": "b8d5b3d2-508d-4dac-8309-334a1a84bf81",
       "name": "Last call message",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -303,7 +303,7 @@
       "parameters": {
         "jsCode": "// Writes one row to automation_events (feeds the dashboard timeline and hours-saved KPI)\nreturn $input.all().map((i) => ({ json: {\n  workflow: \"quote-follow-up\",\n  title: \"Quote follow-up sequence finished\",\n  contact_id: i.json.contact_id ?? i.json.id ?? null,\n  minutes_saved: 8,\n  at: new Date().toISOString(),\n} }));"
       },
-      "id": "f23aef58-e9f2-4fdf-886d-5011a2fa7d19",
+      "id": "b93575cf-4d0c-4308-9718-ff1a25d2b9de",
       "name": "Log follow-up",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

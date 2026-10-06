@@ -88,7 +88,7 @@ function AutomationCard({ a, stats }: { a: Automation; stats: { sent: number; re
       const x = s.automations.find((y) => y.id === a.id);
       if (!x) return;
       x.active = v;
-      logEvent(s, { automation: a.id, kind: "action", title: `${a.name} ${v ? "switched on" : "paused"}`, detail: "Changed by Temmie", minutesSaved: 0 });
+      logEvent(s, { automation: a.id, kind: "action", title: `${a.name} ${v ? "switched on" : "paused"}`, detail: "Changed by Koret", minutesSaved: 0 });
     });
     toast(v ? "Automation on" : "Automation paused", a.name, v ? "ok" : "info");
   };
